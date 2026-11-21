@@ -8170,9 +8170,9 @@ function generateStickerCanvas(opts = {}) {
 
   // 3. Middle: Barcode & Barcode Code text
   const barY = Math.round(nameY + nameFontSize * 1.15);
-  const priceHeight = price > 0 ? Math.round(canvasH * 0.20) : 0;
+  const priceHeight = price > 0 ? Math.round(canvasH * 0.21) : 0;
   const codeTextHeight = Math.round(canvasH * 0.13);
-  const availBarHeight = Math.max(26, canvasH - barY - codeTextHeight - priceHeight - 6);
+  const availBarHeight = Math.max(24, canvasH - barY - codeTextHeight - priceHeight - 8);
 
   drawCode128OnCanvas(ctx, code, 8, barY, canvasW - 16, availBarHeight);
 
@@ -8190,7 +8190,7 @@ function generateStickerCanvas(opts = {}) {
     const boxW = Math.min(canvasW - 10, Math.round(textMetrics.width + 14));
     const boxH = Math.round(priceFontSize + 7);
     const boxX = Math.round((canvasW - boxW) / 2);
-    const boxY = Math.round(canvasH - boxH - 3);
+    const boxY = Math.round(canvasH - boxH - 5);
 
     // Subtle crisp border matching the on-screen pill
     ctx.strokeStyle = '#000000';
@@ -8518,7 +8518,8 @@ function convertCanvasToTsplJob(canvas, qty = 1, widthMm = 30, heightMm = 20) {
   let byteIndex = 0;
   for (let row = 0; row < height; row++) {
     for (let colBytes = 0; colBytes < widthBytes; colBytes++) {
-      let compiledByte = 0;
+      // TSPL BITMAP polarity: bit 1 = white (blank background), bit 0 = black (printed dot)
+      let compiledByte = 0xFF;
       for (let bit = 0; bit < 8; bit++) {
         const col = (colBytes * 8) + bit;
         if (col < width) {
@@ -8529,10 +8530,10 @@ function convertCanvasToTsplJob(canvas, qty = 1, widthMm = 30, heightMm = 20) {
           const a = pixels[pixelOffset + 3];
           // Luminance calculation
           const luminance = (r * 0.299 + g * 0.587 + b * 0.114);
-          // Dark pixel = 1 (printed dot in TSPL)
+          // Dark pixel = 0 (printed black dot), white background stays 1
           const isBlack = (a > 128 && luminance < 195);
           if (isBlack) {
-            compiledByte |= (1 << (7 - bit));
+            compiledByte &= ~(1 << (7 - bit));
           }
         }
       }
