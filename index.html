@@ -2271,14 +2271,40 @@
   <!-- MODAL: BARCODE STUDIO & PRINT (ສ້າງ & ພິມບາໂຄ້ດ)   -->
   <!-- ================================================= -->
   <div id="barcodeStudioModal" class="modal-backdrop no-print" style="display:none;z-index:9999;">
-    <div class="modal-box" style="max-width:700px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 25px 55px rgba(0,0,0,0.35);">
+    <div class="modal-box" style="max-width:720px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 25px 55px rgba(0,0,0,0.35);">
       <div class="modal-header" style="background:linear-gradient(135deg, #3730a3 0%, #4f46e5 100%);color:#fff;padding:0.9rem 1.25rem;">
         <div class="card-title" style="color:#fff;display:flex;align-items:center;gap:0.5rem;font-size:1.15rem;">
           🏷️ ອອກແບບ ແລະ ສັ່ງພິມບາໂຄ້ດສິນຄ້າ (Barcode Studio)
         </div>
         <button class="cart-remove" style="color:#fff;" onclick="closeBarcodeStudioModal()">✕</button>
       </div>
-      <div class="modal-body" style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
+      <div class="modal-body" style="padding:1.15rem;display:flex;flex-direction:column;gap:0.85rem;">
+
+        <!-- Bluetooth Printer Connection Bar for POS-8610-L -->
+        <div class="bluetooth-printer-bar" id="btPrinterBar" style="background:#f1f5f9;border:1.5px solid #cbd5e1;border-radius:12px;padding:0.75rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;">
+          <div style="display:flex;align-items:center;gap:0.65rem;">
+            <div style="width:38px;height:38px;border-radius:10px;background:#e0e7ff;color:#4338ca;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">🖨️</div>
+            <div>
+              <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+                <span style="font-weight:800;font-size:0.88rem;color:#0f172a;">POS-8610-L (80mm Thermal & BT)</span>
+                <span id="btStatusBadge" style="font-size:0.72rem;font-weight:700;padding:0.15rem 0.5rem;border-radius:999px;background:#fee2e2;color:#991b1b;display:inline-flex;align-items:center;gap:0.25rem;">
+                  <span style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+                  <span id="btStatusText">ຍັງບໍ່ທັນເຊື່ອມຕໍ່</span>
+                </span>
+              </div>
+              <div style="font-size:0.74rem;color:#64748b;">ຮອງຮັບ Bluetooth, USB & Windows/Android System Driver</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
+            <button type="button" id="btnConnectBT" class="btn btn-sm btn-primary" onclick="connectPos8610Bluetooth()" style="background:#4f46e5;border-color:#4338ca;font-size:0.8rem;padding:0.35rem 0.75rem;font-weight:700;display:inline-flex;align-items:center;gap:0.35rem;border-radius:8px;">
+              <span>📶 ເຊື່ອມຕໍ່ Bluetooth</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="openPos8610SetupModal()" style="border-color:#94a3b8;color:#334155;background:#ffffff;font-size:0.8rem;padding:0.35rem 0.65rem;font-weight:700;display:inline-flex;align-items:center;gap:0.35rem;border-radius:8px;" title="ເບິ່ງວິທີຕັ້ງຄ່າ">
+              <span>⚙️ ວິທີຕັ້ງຄ່າ</span>
+            </button>
+          </div>
+        </div>
+
         <div class="barcode-studio-grid">
           <!-- Left Column: Simple Inputs -->
           <div style="display:flex;flex-direction:column;gap:0.75rem;">
@@ -2313,6 +2339,9 @@
               <div class="form-group">
                 <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">📏 ຂະໜາດສະຕິກເກີ້:</label>
                 <select id="barcodeSizeSelect" class="input" onchange="onBarcodeSizeSelectChange()" style="font-weight:700;font-size:0.84rem;">
+                  <option value="80x50">80 × 50 mm (POS-8610-L 80mm)</option>
+                  <option value="75x50">75 × 50 mm (Thermal 80mm)</option>
+                  <option value="80x40">80 × 40 mm (POS-8610-L)</option>
                   <option value="50x30">50 × 30 mm (ມາດຕະຖານ - Thermal)</option>
                   <option value="40x30">40 × 30 mm (ຂະໜາດກາງ)</option>
                   <option value="35x25">35 × 25 mm (ຂະໜາດນ້ອຍ)</option>
@@ -2325,7 +2354,7 @@
               </div>
               <div class="form-group">
                 <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">🖨️ ຈຳນວນທີ່ຈະພິມ:</label>
-                <input type="number" id="barcodeQtyInput" class="input" value="12" min="1" max="500" style="font-weight:800;font-size:0.95rem;text-align:center;" />
+                <input type="number" id="barcodeQtyInput" class="input" value="1" min="1" max="500" style="font-weight:800;font-size:0.95rem;text-align:center;" />
               </div>
             </div>
 
@@ -2350,7 +2379,7 @@
             <div>
               <div style="font-size:0.82rem;font-weight:800;color:#1e293b;margin-bottom:0.4rem;display:flex;align-items:center;justify-content:space-between;">
                 <span>✨ ຕົວຢ່າງສະຕິກເກີ້ (Live Preview):</span>
-                <span id="barcodeSizeBadge" style="font-size:0.72rem;background:#e0e7ff;color:#4338ca;padding:0.1rem 0.45rem;border-radius:999px;font-weight:700;">50 × 30 mm</span>
+                <span id="barcodeSizeBadge" style="font-size:0.72rem;background:#e0e7ff;color:#4338ca;padding:0.1rem 0.45rem;border-radius:999px;font-weight:700;">80 × 50 mm</span>
               </div>
               <div id="barcodeSinglePreviewWrap" style="background:#f1f5f9;padding:0.9rem;border-radius:10px;display:flex;justify-content:center;align-items:center;min-height:140px;border:1px dashed #cbd5e1;">
                 <div id="barcodeSinglePreview" class="barcode-sticker-preview">
@@ -2360,9 +2389,14 @@
             </div>
 
             <!-- Action Buttons -->
-            <div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.4rem;">
-              <button type="button" class="btn btn-primary" onclick="printBarcodeSheet()" style="background:linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);border:none;padding:0.75rem;font-size:1rem;font-weight:800;border-radius:10px;box-shadow:0 4px 12px rgba(79, 70, 229, 0.35);display:flex;align-items:center;justify-content:center;gap:0.5rem;cursor:pointer;">
-                🖨️ ສັ່ງພິມບາໂຄ້ດ (Print)
+            <div style="display:flex;flex-direction:column;gap:0.45rem;margin-top:0.4rem;">
+              <!-- Direct Web Bluetooth Print Button -->
+              <button type="button" id="btnPrintBT" class="btn btn-primary" onclick="printBarcodeViaBluetooth()" style="background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);border:none;padding:0.7rem;font-size:0.95rem;font-weight:800;border-radius:10px;box-shadow:0 3px 10px rgba(37,99,235,0.3);display:flex;align-items:center;justify-content:center;gap:0.45rem;cursor:pointer;">
+                <span>📶 ພິມຜ່ານ Bluetooth (POS-8610-L)</span>
+              </button>
+              <!-- Standard System Print Button -->
+              <button type="button" class="btn btn-outline" onclick="printBarcodeSheet()" style="border-color:#6366f1;color:#4338ca;background:#eef2ff;padding:0.6rem;font-size:0.86rem;font-weight:700;border-radius:8px;display:flex;align-items:center;justify-content:center;gap:0.4rem;cursor:pointer;">
+                <span>📄 ພິມຜ່ານລະບົບທົ່ວໄປ (System Print / 80mm)</span>
               </button>
               <button type="button" id="btnSaveBarcodeToProd" class="btn btn-outline" onclick="saveBarcodeToProduct()" style="border-color:#10b981;color:#047857;background:#ecfdf5;font-weight:700;padding:0.45rem;border-radius:8px;font-size:0.84rem;display:flex;align-items:center;justify-content:center;gap:0.4rem;">
                 💾 ບັນທຶກລະຫັດນີ້ໃສ່ສິນຄ້າ
@@ -2372,8 +2406,92 @@
         </div>
       </div>
       <div class="modal-footer" style="padding:0.65rem 1.25rem;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:0.76rem;color:#64748b;">ຮອງຮັບເຄື່ອງພິມສະຕິກເກີ້ Thermal ແລະ ເຈ້ຍ A4</span>
+        <span style="font-size:0.76rem;color:#64748b;">ຮອງຮັບເຄື່ອງພິມສະຕິກເກີ້ Thermal POS-8610-L, 80mm, 58mm & A4</span>
         <button type="button" class="btn btn-outline btn-sm" onclick="closeBarcodeStudioModal()">ປິດໜ້າຕ່າງ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: POS-8610-L BLUETOOTH PRINTER SETUP         -->
+  <!-- ================================================= -->
+  <div id="pos8610SetupModal" class="modal-backdrop no-print" style="display:none;z-index:10000;" onclick="if(event.target===this)closePos8610SetupModal()">
+    <div class="modal-box" style="max-width:580px;width:95vw;border-radius:18px;overflow:hidden;background:#ffffff;box-shadow:0 25px 60px rgba(0,0,0,0.35);">
+      <div class="modal-header" style="background:linear-gradient(135deg, #1e293b 0%, #334155 100%);color:#ffffff;padding:0.9rem 1.25rem;">
+        <div class="card-title" style="color:#ffffff;display:flex;align-items:center;gap:0.5rem;font-size:1.1rem;">
+          <span>🖨️ ຕັ້ງຄ່າເຄື່ອງພິມ POS-8610-L (USB & Bluetooth)</span>
+        </div>
+        <button type="button" class="cart-remove" style="color:#ffffff;" onclick="closePos8610SetupModal()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;max-height:80vh;overflow-y:auto;">
+        
+        <!-- Printer Info Card -->
+        <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;gap:0.85rem;">
+          <div style="font-size:2rem;background:#e0e7ff;color:#4338ca;width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🏷️</div>
+          <div style="flex:1;">
+            <div style="font-weight:800;font-size:0.95rem;color:#0f172a;">Thermal Label Printer (POS-8610-L)</div>
+            <div style="font-size:0.8rem;color:#64748b;margin-top:0.15rem;line-height:1.45;">
+              • ຂະໜາດເຈ້ຍ: <strong>80mm / MAX</strong> (ມາດຕະຖານ 80×50, 75×50, 50×30 mm)<br/>
+              • ການເຊື່ອມຕໍ່: <strong>USB & Bluetooth (BT)</strong> | ລະຫັດ PIN: <span style="background:#fef08a;color:#854d0e;padding:0.1rem 0.4rem;border-radius:4px;font-weight:800;">0000</span> ຫຼື <span style="background:#fef08a;color:#854d0e;padding:0.1rem 0.4rem;border-radius:4px;font-weight:800;">1234</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bluetooth Live Connection Status Box -->
+        <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:12px;padding:0.85rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;">
+          <div>
+            <div style="font-size:0.82rem;font-weight:700;color:#1e40af;">ສະຖານະ Bluetooth ໃນເວັບແອັບ:</div>
+            <div id="setupModalBtStatus" style="font-size:0.9rem;font-weight:800;color:#dc2626;margin-top:0.2rem;display:flex;align-items:center;gap:0.35rem;">
+              <span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;"></span>
+              <span>ຍັງບໍ່ທັນເຊື່ອມຕໍ່</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.4rem;">
+            <button type="button" class="btn btn-sm btn-primary" onclick="connectPos8610Bluetooth()" style="background:#2563eb;border-color:#1d4ed8;font-weight:700;font-size:0.82rem;">
+              📶 ເຊື່ອມຕໍ່ເລີຍ
+            </button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="disconnectPos8610Bluetooth()" style="border-color:#cbd5e1;font-weight:700;font-size:0.82rem;">
+              ຕັດການເຊື່ອມຕໍ່
+            </button>
+          </div>
+        </div>
+
+        <!-- Step-by-Step Instructions -->
+        <div>
+          <div style="font-weight:800;font-size:0.9rem;color:#1e293b;margin-bottom:0.5rem;">📖 ຄູ່ມືການເຊື່ອມຕໍ່ແຕ່ລະອຸປະກອນ:</div>
+          
+          <!-- Instructions: Windows PC -->
+          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;padding:0.75rem 0.9rem;margin-bottom:0.65rem;">
+            <div style="font-weight:800;font-size:0.86rem;color:#0369a1;display:flex;align-items:center;gap:0.4rem;margin-bottom:0.35rem;">
+              <span>💻 ສຳລັບຄອມພິວເຕີ Windows (Bluetooth / USB)</span>
+            </div>
+            <ol style="margin:0;padding-left:1.2rem;font-size:0.8rem;color:#334155;line-height:1.5;">
+              <li>ເປີດສະວິດເຄື່ອງພິມ POS-8610-L ໃຫ້ໄຟສີຟ້າ/ຂຽວແຈ້ງ.</li>
+              <li>ໃນຄອມພິວເຕີ: ກົດປຸ່ມ <strong>Windows + I</strong> (Settings) ➡️ <strong>Bluetooth & devices</strong> ➡️ ກົດ <strong>Add device</strong> ➡️ ເລືອກ <strong>Bluetooth</strong>.</li>
+              <li>ເລືອກຊື່ <strong>POS-8610-L</strong> (ຫຼື <em>Printer_XXXX</em> / <em>Bluetooth Printer</em>) ➡️ ໃສ່ລະຫັດ PIN: <code style="background:#f1f5f9;padding:1px 4px;border-radius:4px;font-weight:bold;">0000</code> ຫຼື <code style="background:#f1f5f9;padding:1px 4px;border-radius:4px;font-weight:bold;">1234</code>.</li>
+              <li>ເມື່ອເຊື່ອມຕໍ່ແລ້ວ, ເວລາສັ່ງພິມຈາກໜ້າເວັບໄຊ ໃຫ້ກົດ <strong>"📄 ພິມຜ່ານລະບົບທົ່ວໄປ"</strong> ➡️ ເລືອກເຄື່ອງພິມ POS-8610-L ແລະ ຕັ້ງຂະໜາດເຈ້ຍເປັນ <strong>80mm</strong>.</li>
+            </ol>
+          </div>
+
+          <!-- Instructions: Mobile & Tablet Android / Sunmi -->
+          <div style="background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;padding:0.75rem 0.9rem;">
+            <div style="font-weight:800;font-size:0.86rem;color:#15803d;display:flex;align-items:center;gap:0.4rem;margin-bottom:0.35rem;">
+              <span>📱 ສຳລັບໂທລະສັບມືຖື & ແທັບເລັດ (Android / Sunmi)</span>
+            </div>
+            <ol style="margin:0;padding-left:1.2rem;font-size:0.8rem;color:#334155;line-height:1.5;">
+              <li>ເປີດ Bluetooth ໃນໂທລະສັບມືຖື/ແທັບເລັດ ➡️ ຄົ້ນຫາອຸປະກອນ ➡️ ເລືອກ <strong>POS-8610-L</strong> ➡️ ຈັບຄູ່ໃສ່ PIN: <code style="background:#f1f5f9;padding:1px 4px;border-radius:4px;font-weight:bold;">0000</code>.</li>
+              <li><strong>ວິທີທີ 1 (ກົງຜ່ານ Web Bluetooth):</strong> ໃນໜ້າບາໂຄ້ດ ກົດປຸ່ມ <strong>"📶 ເຊື່ອມຕໍ່ Bluetooth"</strong> ➡️ Google Chrome ຈະສະແດງລາຍຊື່ອຸປະກອນ ➡️ ເລືອກ POS-8610-L ແລ້ວກົດ Pair ➡️ ກົດພິມໄດ້ທັນທີ!</li>
+              <li><strong>ວິທີທີ 2 (ຜ່ານ Print Service / RawBT):</strong> ຫາກໃຊ້ແອັບຊ່ວຍພິມ (ເຊັ່ນ <strong>RawBT</strong> ຫຼື <strong>Bluetooth Print</strong>): ເປີດແອັບ ➡️ ເລືອກ Connection = Bluetooth ➡️ ເລືອກ POS-8610-L ➡️ ສັ່ງພິມຜ່ານລະບົບທົ່ວໄປໄດ້ 100%.</li>
+            </ol>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer" style="padding:0.75rem 1.25rem;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="testPrintPos8610Sample()" style="border-color:#4f46e5;color:#4338ca;font-weight:700;">
+          🧪 ທົດສອບພິມຕົວຢ່າງ
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="closePos8610SetupModal()">ປິດ</button>
       </div>
     </div>
   </div>

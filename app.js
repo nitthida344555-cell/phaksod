@@ -7962,7 +7962,7 @@ function openBarcodeStudioModal(productId = null) {
 
   const sizeSelect = document.getElementById('barcodeSizeSelect');
   if (sizeSelect && !sizeSelect.value) {
-    sizeSelect.value = '50x30';
+    sizeSelect.value = '80x50';
   }
   const customRow = document.getElementById('barcodeCustomSizeRow');
   if (customRow) {
@@ -8023,6 +8023,9 @@ function setBarcodeQtyPreset(qty) {
 // STICKER SIZE CONFIGURATION & HELPERS
 // ==========================================
 const STICKER_SIZES = {
+  '80x50': { width: 80, height: 50, label: '80 × 50 mm (POS-8610-L 80mm)', barWidth: 2.8, barHeight: 62, qrSize: 110, shopSize: '0.85rem', nameSize: '1.05rem', codeSize: '0.95rem', priceSize: '1.2rem' },
+  '75x50': { width: 75, height: 50, label: '75 × 50 mm (Thermal 80mm)', barWidth: 2.6, barHeight: 60, qrSize: 105, shopSize: '0.82rem', nameSize: '1.0rem', codeSize: '0.92rem', priceSize: '1.15rem' },
+  '80x40': { width: 80, height: 40, label: '80 × 40 mm (POS-8610-L)', barWidth: 2.6, barHeight: 52, qrSize: 95, shopSize: '0.82rem', nameSize: '1.0rem', codeSize: '0.9rem', priceSize: '1.15rem' },
   '50x30': { width: 50, height: 30, label: '50 × 30 mm', barWidth: 1.7, barHeight: 38, qrSize: 70, shopSize: '0.68rem', nameSize: '0.8rem', codeSize: '0.75rem', priceSize: '0.88rem' },
   '40x30': { width: 40, height: 30, label: '40 × 30 mm', barWidth: 1.4, barHeight: 36, qrSize: 64, shopSize: '0.64rem', nameSize: '0.76rem', codeSize: '0.72rem', priceSize: '0.84rem' },
   '35x25': { width: 35, height: 25, label: '35 × 25 mm', barWidth: 1.2, barHeight: 28, qrSize: 52, shopSize: '0.6rem', nameSize: '0.7rem', codeSize: '0.68rem', priceSize: '0.76rem' },
@@ -8215,6 +8218,233 @@ function printBarcodeSheet() {
   setTimeout(() => {
     document.body.classList.remove('printing-barcodes');
   }, 1000);
+}
+
+// ==========================================================================
+// POS-8610-L BLUETOOTH THERMAL LABEL PRINTER INTEGRATION
+// ==========================================================================
+let pos8610BtDevice = null;
+let pos8610BtServer = null;
+let pos8610BtCharacteristic = null;
+
+const POS8610_GATT_SERVICES = [
+  '000018f0-0000-1000-8000-00805f9b34fb', // Standard Printer Service
+  'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+  '49535343-fe7d-4ae5-8fa9-9fafd205e455', // ISSC transparent UART
+  '0000ffe0-0000-1000-8000-00805f9b34fb', // HM-10 UART
+  '0000ff00-0000-1000-8000-00805f9b34fb'
+];
+
+function updatePos8610BtUI(connected, deviceName = 'POS-8610-L') {
+  const badge = document.getElementById('btStatusBadge');
+  const btn = document.getElementById('btnConnectBT');
+  const modalStatus = document.getElementById('setupModalBtStatus');
+
+  if (connected) {
+    if (badge) {
+      badge.style.background = '#dcfce7';
+      badge.style.color = '#15803d';
+      badge.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;"></span> <span>ເຊື່ອມຕໍ່ແລ້ວ: ${deviceName}</span>`;
+    }
+    if (btn) {
+      btn.innerHTML = '<span>🟢 ເຊື່ອມຕໍ່ແລ້ວ</span>';
+      btn.style.background = '#16a34a';
+      btn.style.borderColor = '#15803d';
+    }
+    if (modalStatus) {
+      modalStatus.style.color = '#16a34a';
+      modalStatus.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;"></span> <span>ເຊື່ອມຕໍ່ແລ້ວ (${deviceName})</span>`;
+    }
+  } else {
+    if (badge) {
+      badge.style.background = '#fee2e2';
+      badge.style.color = '#991b1b';
+      badge.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:#ef4444;display:inline-block;"></span> <span id="btStatusText">ຍັງບໍ່ທັນເຊື່ອມຕໍ່</span>`;
+    }
+    if (btn) {
+      btn.innerHTML = '<span>📶 ເຊື່ອມຕໍ່ Bluetooth</span>';
+      btn.style.background = '#4f46e5';
+      btn.style.borderColor = '#4338ca';
+    }
+    if (modalStatus) {
+      modalStatus.style.color = '#dc2626';
+      modalStatus.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;"></span> <span>ຍັງບໍ່ທັນເຊື່ອມຕໍ່</span>`;
+    }
+  }
+}
+
+async function connectPos8610Bluetooth() {
+  if (!navigator.bluetooth) {
+    alert('Browser ນີ້ຍັງບໍ່ຮອງຮັບ Web Bluetooth ໂດຍກົງ (ແນະນຳໃຫ້ໃຊ້ Google Chrome ໃນ Android/Windows/Mac ຫຼື ໃຊ້ການພິມຜ່ານລະບົບທົ່ວໄປ System Print).');
+    openPos8610SetupModal();
+    return;
+  }
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: POS8610_GATT_SERVICES
+    });
+
+    if (!device) return;
+    pos8610BtDevice = device;
+    device.addEventListener('gattserverdisconnected', () => {
+      pos8610BtServer = null;
+      pos8610BtCharacteristic = null;
+      updatePos8610BtUI(false);
+      if (typeof showToast === 'function') {
+        showToast('⚠️ ຕັດການເຊື່ອມຕໍ່ກັບ POS-8610-L ແລ້ວ', 'warning');
+      }
+    });
+
+    pos8610BtServer = await device.gatt.connect();
+
+    // Find writable GATT characteristic for printing
+    for (const serviceUuid of POS8610_GATT_SERVICES) {
+      try {
+        const service = await pos8610BtServer.getPrimaryService(serviceUuid);
+        const chars = await service.getCharacteristics();
+        for (const ch of chars) {
+          if (ch.properties.write || ch.properties.writeWithoutResponse) {
+            pos8610BtCharacteristic = ch;
+            break;
+          }
+        }
+        if (pos8610BtCharacteristic) break;
+      } catch (e) {}
+    }
+
+    updatePos8610BtUI(true, device.name || 'POS-8610-L');
+    if (typeof showToast === 'function') {
+      showToast(`🟢 ເຊື່ອມຕໍ່ເຄື່ອງພິມ ${device.name || 'POS-8610-L'} ສຳເລັດ!`, 'success');
+    }
+  } catch (err) {
+    console.error('Bluetooth connection error:', err);
+    if (err.name !== 'NotFoundError') {
+      alert(`ບໍ່ສາມາດເຊື່ອມຕໍ່ Bluetooth ໄດ້: ${err.message || err}`);
+      openPos8610SetupModal();
+    }
+  }
+}
+
+function disconnectPos8610Bluetooth() {
+  if (pos8610BtDevice && pos8610BtDevice.gatt && pos8610BtDevice.gatt.connected) {
+    pos8610BtDevice.gatt.disconnect();
+  }
+  pos8610BtDevice = null;
+  pos8610BtServer = null;
+  pos8610BtCharacteristic = null;
+  updatePos8610BtUI(false);
+  if (typeof showToast === 'function') {
+    showToast('ຕັດການເຊື່ອມຕໍ່ Bluetooth ແລ້ວ', 'info');
+  }
+}
+
+function openPos8610SetupModal() {
+  const modal = document.getElementById('pos8610SetupModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closePos8610SetupModal() {
+  const modal = document.getElementById('pos8610SetupModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function sendPos8610BluetoothBytes(uint8Data) {
+  if (!pos8610BtCharacteristic) {
+    throw new Error('ບໍ່ພົບຊ່ອງສົ່ງຂໍ້ມູນ Bluetooth Characteristic');
+  }
+  const CHUNK_SIZE = 100;
+  for (let i = 0; i < uint8Data.length; i += CHUNK_SIZE) {
+    const chunk = uint8Data.slice(i, i + CHUNK_SIZE);
+    if (pos8610BtCharacteristic.writeValueWithoutResponse) {
+      await pos8610BtCharacteristic.writeValueWithoutResponse(chunk);
+    } else {
+      await pos8610BtCharacteristic.writeValue(chunk);
+    }
+  }
+}
+
+function generatePos8610TsplCommands(opts) {
+  const { name = 'ສິນຄ້າ', code = '1001', price = 0, qty = 1, widthMm = 80, heightMm = 50 } = opts;
+  let tspl = '';
+  tspl += `SIZE ${widthMm} mm, ${heightMm} mm\r\n`;
+  tspl += `GAP 2 mm, 0 mm\r\n`;
+  tspl += `DIRECTION 1\r\n`;
+  tspl += `CLS\r\n`;
+  tspl += `TEXT 30,25,"TSS24.BF2",0,1,1,"${name}"\r\n`;
+  tspl += `BARCODE 30,65,"128",60,1,0,2,3,"${code}"\r\n`;
+  if (price > 0) {
+    tspl += `TEXT 30,150,"TSS24.BF2",0,1,1,"Price: ${Number(price).toLocaleString()} LAK"\r\n`;
+  }
+  tspl += `PRINT ${qty},1\r\n`;
+  return new TextEncoder().encode(tspl);
+}
+
+async function printBarcodeViaBluetooth() {
+  // If not yet connected via Bluetooth, trigger pairing first
+  if (!pos8610BtDevice || !pos8610BtServer || !pos8610BtCharacteristic) {
+    const wantsConnect = confirm('ຍັງບໍ່ທັນໄດ້ເຊື່ອມຕໍ່ກັບເຄື່ອງພິມ POS-8610-L ຜ່ານ Bluetooth.\n\nກົດ "OK" ເພື່ອເລືອກເຊື່ອມຕໍ່ເຄື່ອງພິມ Bluetooth ດຽວນີ້!');
+    if (wantsConnect) {
+      await connectPos8610Bluetooth();
+      if (!pos8610BtCharacteristic) return;
+    } else {
+      return;
+    }
+  }
+
+  // Auto-save barcode to the selected/matching product before printing
+  const nameVal = (document.getElementById('barcodeNameInput')?.value || '').trim();
+  if (activeBarcodeProductId || nameVal) {
+    saveBarcodeToProduct(true);
+  }
+
+  const codeVal = (document.getElementById('barcodeCodeInput')?.value || '').trim() || 'NO-CODE';
+  const priceVal = Number(document.getElementById('barcodePriceInput')?.value || 0);
+  const qtyIn = document.getElementById('barcodeQtyInput');
+  const qty = Math.max(1, Math.min(500, parseInt(qtyIn?.value, 10) || 1));
+  const size = getSelectedStickerSize();
+
+  try {
+    const tsplBytes = generatePos8610TsplCommands({
+      name: nameVal || 'ສິນຄ້າທົ່ວໄປ',
+      code: codeVal,
+      price: priceVal,
+      qty: qty,
+      widthMm: size.width || 80,
+      heightMm: size.height || 50
+    });
+
+    await sendPos8610BluetoothBytes(tsplBytes);
+    if (typeof showToast === 'function') {
+      showToast(`✅ ສົ່ງຄຳສັ່ງພິມບາໂຄ້ດ ${qty} ດວງ ໄປຫາ POS-8610-L ສຳເລັດ!`, 'success');
+    }
+  } catch (err) {
+    console.error('Print Bluetooth error:', err);
+    alert(`ເກີດຂໍ້ຜິດພາດໃນການສົ່ງພິມ: ${err.message || err}\n\nຫາກ Bluetooth ຂັດຂ້ອງ, ທ່ານສາມາດກົດປຸ່ມ "📄 ພິມຜ່ານລະບົບທົ່ວໄປ" ໄດ້.`);
+  }
+}
+
+async function testPrintPos8610Sample() {
+  if (pos8610BtCharacteristic) {
+    try {
+      const tsplBytes = generatePos8610TsplCommands({
+        name: '🥬 ຮ້ານຂາຍຜັກສົດ (Test)',
+        code: '1001',
+        price: 8000,
+        qty: 1,
+        widthMm: 80,
+        heightMm: 50
+      });
+      await sendPos8610BluetoothBytes(tsplBytes);
+      alert('✅ ສົ່ງຄຳສັ່ງພິມທົດສອບຜ່ານ Bluetooth ສຳເລັດ!');
+    } catch (e) {
+      alert('ການສົ່ງພິມທົດສອບຜ່ານ Bluetooth ຂັດຂ້ອງ, ຈະທົດສອບພິມຜ່ານລະບົບ Browser ແທນ.');
+      window.print();
+    }
+  } else {
+    alert('ຍັງບໍ່ທັນເຊື່ອມຕໍ່ Bluetooth. ລະບົບຈະເປີດໜ້າຕ່າງພິມຂອງລະບົບ (System Print) ເພື່ອທົດສອບ.');
+    window.print();
+  }
 }
 
 // ==========================================================================
