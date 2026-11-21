@@ -7961,8 +7961,8 @@ function openBarcodeStudioModal(productId = null) {
   }
 
   const sizeSelect = document.getElementById('barcodeSizeSelect');
-  if (sizeSelect && !sizeSelect.value) {
-    sizeSelect.value = '80x50';
+  if (sizeSelect && (!sizeSelect.value || sizeSelect.value === '80x50')) {
+    sizeSelect.value = '30x20';
   }
   const customRow = document.getElementById('barcodeCustomSizeRow');
   if (customRow) {
@@ -8023,38 +8023,39 @@ function setBarcodeQtyPreset(qty) {
 // STICKER SIZE CONFIGURATION & HELPERS
 // ==========================================
 const STICKER_SIZES = {
-  '80x50': { width: 80, height: 50, label: '80 × 50 mm (POS-8610-L 80mm)', barWidth: 2.8, barHeight: 62, qrSize: 110, shopSize: '0.85rem', nameSize: '1.05rem', codeSize: '0.95rem', priceSize: '1.2rem' },
+  '30x20': { width: 30, height: 20, label: '30 × 20 mm (POS-8610-L)', barWidth: 1.1, barHeight: 24, qrSize: 42, shopSize: '0.55rem', nameSize: '0.72rem', codeSize: '0.62rem', priceSize: '0.75rem' },
+  '40x30': { width: 40, height: 30, label: '40 × 30 mm (ຂະໜາດກາງ)', barWidth: 1.4, barHeight: 36, qrSize: 64, shopSize: '0.64rem', nameSize: '0.76rem', codeSize: '0.72rem', priceSize: '0.84rem' },
+  '50x30': { width: 50, height: 30, label: '50 × 30 mm (ມາດຕະຖານ)', barWidth: 1.7, barHeight: 38, qrSize: 70, shopSize: '0.68rem', nameSize: '0.8rem', codeSize: '0.75rem', priceSize: '0.88rem' },
+  '35x25': { width: 35, height: 25, label: '35 × 25 mm', barWidth: 1.2, barHeight: 28, qrSize: 52, shopSize: '0.6rem', nameSize: '0.7rem', codeSize: '0.68rem', priceSize: '0.76rem' },
+  '80x50': { width: 80, height: 50, label: '80 × 50 mm (80mm Thermal)', barWidth: 2.8, barHeight: 62, qrSize: 110, shopSize: '0.85rem', nameSize: '1.05rem', codeSize: '0.95rem', priceSize: '1.2rem' },
   '75x50': { width: 75, height: 50, label: '75 × 50 mm (Thermal 80mm)', barWidth: 2.6, barHeight: 60, qrSize: 105, shopSize: '0.82rem', nameSize: '1.0rem', codeSize: '0.92rem', priceSize: '1.15rem' },
   '80x40': { width: 80, height: 40, label: '80 × 40 mm (POS-8610-L)', barWidth: 2.6, barHeight: 52, qrSize: 95, shopSize: '0.82rem', nameSize: '1.0rem', codeSize: '0.9rem', priceSize: '1.15rem' },
-  '50x30': { width: 50, height: 30, label: '50 × 30 mm', barWidth: 1.7, barHeight: 38, qrSize: 70, shopSize: '0.68rem', nameSize: '0.8rem', codeSize: '0.75rem', priceSize: '0.88rem' },
-  '40x30': { width: 40, height: 30, label: '40 × 30 mm', barWidth: 1.4, barHeight: 36, qrSize: 64, shopSize: '0.64rem', nameSize: '0.76rem', codeSize: '0.72rem', priceSize: '0.84rem' },
-  '35x25': { width: 35, height: 25, label: '35 × 25 mm', barWidth: 1.2, barHeight: 28, qrSize: 52, shopSize: '0.6rem', nameSize: '0.7rem', codeSize: '0.68rem', priceSize: '0.76rem' },
-  '60x40': { width: 60, height: 40, label: '60 × 40 mm', barWidth: 2.1, barHeight: 50, qrSize: 90, shopSize: '0.75rem', nameSize: '0.9rem', codeSize: '0.82rem', priceSize: '0.98rem' },
+  '60x40': { width: 60, height: 40, label: '60 × 40 mm (ຂະໜາດໃຫຍ່)', barWidth: 2.1, barHeight: 50, qrSize: 90, shopSize: '0.75rem', nameSize: '0.9rem', codeSize: '0.82rem', priceSize: '0.98rem' },
   '52x29': { width: 52.5, height: 29.7, label: '52.5 × 29.7 mm (A4 40 ດວງ)', barWidth: 1.8, barHeight: 36, qrSize: 68, shopSize: '0.68rem', nameSize: '0.78rem', codeSize: '0.74rem', priceSize: '0.86rem' },
   '38x21': { width: 38.1, height: 21.2, label: '38.1 × 21.2 mm (A4 65 ດວງ)', barWidth: 1.2, barHeight: 24, qrSize: 46, shopSize: '0.56rem', nameSize: '0.64rem', codeSize: '0.6rem', priceSize: '0.7rem' },
   '70x37': { width: 70, height: 37, label: '70 × 37 mm (A4 24 ດວງ)', barWidth: 2.4, barHeight: 46, qrSize: 85, shopSize: '0.78rem', nameSize: '0.92rem', codeSize: '0.85rem', priceSize: '1.02rem' }
 };
 
 function getSelectedStickerSize() {
-  const sel = document.getElementById('barcodeSizeSelect')?.value || '50x30';
+  const sel = document.getElementById('barcodeSizeSelect')?.value || '30x20';
   if (sel === 'custom') {
-    const w = Math.max(20, parseFloat(document.getElementById('barcodeCustomW')?.value) || 50);
-    const h = Math.max(15, parseFloat(document.getElementById('barcodeCustomH')?.value) || 30);
-    const scale = Math.min(w / 50, h / 30);
+    const w = Math.max(20, parseFloat(document.getElementById('barcodeCustomW')?.value) || 30);
+    const h = Math.max(15, parseFloat(document.getElementById('barcodeCustomH')?.value) || 20);
+    const scale = Math.min(w / 30, h / 20);
     return {
       width: w,
       height: h,
       label: `${w} × ${h} mm`,
-      barWidth: Math.max(1.1, Math.min(2.5, +(1.7 * (w / 50)).toFixed(2))),
-      barHeight: Math.max(20, Math.min(65, Math.round(38 * (h / 30)))),
-      qrSize: Math.max(42, Math.min(105, Math.round(70 * (h / 30)))),
-      shopSize: `${Math.max(0.55, +(0.68 * scale).toFixed(2))}rem`,
-      nameSize: `${Math.max(0.62, +(0.8 * scale).toFixed(2))}rem`,
-      codeSize: `${Math.max(0.58, +(0.75 * scale).toFixed(2))}rem`,
-      priceSize: `${Math.max(0.68, +(0.88 * scale).toFixed(2))}rem`
+      barWidth: Math.max(1.0, Math.min(2.5, +(1.1 * (w / 30)).toFixed(2))),
+      barHeight: Math.max(18, Math.min(65, Math.round(24 * (h / 20)))),
+      qrSize: Math.max(42, Math.min(105, Math.round(42 * (h / 20)))),
+      shopSize: `${Math.max(0.5, +(0.55 * scale).toFixed(2))}rem`,
+      nameSize: `${Math.max(0.65, +(0.72 * scale).toFixed(2))}rem`,
+      codeSize: `${Math.max(0.55, +(0.62 * scale).toFixed(2))}rem`,
+      priceSize: `${Math.max(0.68, +(0.75 * scale).toFixed(2))}rem`
     };
   }
-  return STICKER_SIZES[sel] || STICKER_SIZES['50x30'];
+  return STICKER_SIZES[sel] || STICKER_SIZES['30x20'];
 }
 
 function onBarcodeSizeSelectChange() {
@@ -8072,6 +8073,159 @@ function onBarcodeSizeSelectChange() {
   }
 
   updateBarcodeLivePreview();
+}
+
+// Draw barcode bars directly onto Canvas with high fidelity
+function drawCode128OnCanvas(ctx, text, startX, startY, maxWidth, barHeight) {
+  const CODE128_PATTERNS = [
+    "212222", "222122", "222221", "121223", "121322", "131222", "122213", "122312", "132212", "221213",
+    "221312", "231212", "112232", "122132", "122231", "113222", "123122", "123221", "223211", "221132",
+    "221231", "213212", "223112", "312131", "311222", "321122", "321221", "312212", "322112", "322211",
+    "212123", "212321", "232121", "111323", "131123", "131321", "112313", "132113", "132311", "211313",
+    "231113", "231311", "112133", "112331", "132131", "113123", "113321", "133121", "313121", "211331",
+    "231131", "213113", "213311", "213131", "311123", "311321", "331121", "312113", "312311", "332111",
+    "314111", "221411", "431111", "111224", "111422", "121124", "121421", "141122", "141221", "112214",
+    "112412", "122114", "122411", "142112", "142211", "241211", "221114", "413111", "241112", "134111",
+    "111242", "121142", "121241", "114212", "124112", "124211", "411212", "421112", "421211", "212141",
+    "214121", "412121", "111143", "111341", "131141", "114113", "114311", "411113", "411311", "113141",
+    "114131", "311141", "411131", "211412", "211214", "211232", "2331112"
+  ];
+  const cleanStr = String(text || '').replace(/[^\x20-\x7E]/g, '') || '0000';
+  const indices = [104]; // Start B
+  let checksum = 104;
+  for (let i = 0; i < cleanStr.length; i++) {
+    const code = cleanStr.charCodeAt(i) - 32;
+    indices.push(code);
+    checksum += code * (i + 1);
+  }
+  indices.push(checksum % 103);
+  indices.push(106); // Stop
+  let fullPattern = '';
+  for (const idx of indices) {
+    fullPattern += CODE128_PATTERNS[idx] || '212222';
+  }
+
+  let totalModules = 0;
+  for (let i = 0; i < fullPattern.length; i++) {
+    totalModules += parseInt(fullPattern[i], 10);
+  }
+  let moduleWidth = Math.floor(maxWidth / totalModules);
+  if (moduleWidth < 1) moduleWidth = 1;
+  const barcodePixelWidth = totalModules * moduleWidth;
+  let curX = startX + Math.floor((maxWidth - barcodePixelWidth) / 2);
+
+  ctx.fillStyle = '#000000';
+  let isBar = true;
+  for (let i = 0; i < fullPattern.length; i++) {
+    const w = parseInt(fullPattern[i], 10) * moduleWidth;
+    if (isBar) {
+      ctx.fillRect(curX, startY, w, barHeight);
+    }
+    curX += w;
+    isBar = !isBar;
+  }
+}
+
+// Generate complete Sticker on Canvas (203 DPI = 8 dots/mm)
+function generateStickerCanvas(opts = {}) {
+  const size = getSelectedStickerSize();
+  const widthMm = opts.widthMm || size.width || 30;
+  const heightMm = opts.heightMm || size.height || 20;
+  const name = (opts.name !== undefined ? opts.name : (document.getElementById('barcodeNameInput')?.value || '')).trim() || 'ສິນຄ້າ';
+  const code = (opts.code !== undefined ? opts.code : (document.getElementById('barcodeCodeInput')?.value || '')).trim() || '1001';
+  const price = Number(opts.price !== undefined ? opts.price : (document.getElementById('barcodePriceInput')?.value || 0));
+
+  // 203 DPI = 8 dots/mm. Ensure width is multiple of 8
+  const dotsW = Math.round(widthMm * 8);
+  const widthBytes = Math.ceil(dotsW / 8);
+  const canvasW = widthBytes * 8;
+  const canvasH = Math.round(heightMm * 8);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+  const ctx = canvas.getContext('2d');
+
+  ctx.imageSmoothingEnabled = false;
+
+  // 1. Crisp white background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvasW, canvasH);
+
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+
+  const fontLaoStack = '"Noto Sans Lao", "Leelawadee UI", "Saysettha OT", "Phetsarath OT", sans-serif';
+
+  // 2. Top Line: Product Name (Lao font)
+  let nameFontSize = Math.min(22, Math.max(14, Math.round(canvasH * 0.14)));
+  ctx.font = `bold ${nameFontSize}px ${fontLaoStack}`;
+  while (ctx.measureText(name).width > canvasW - 12 && nameFontSize > 11) {
+    nameFontSize -= 1;
+    ctx.font = `bold ${nameFontSize}px ${fontLaoStack}`;
+  }
+  const nameY = Math.max(3, Math.round(canvasH * 0.025));
+  ctx.fillText(name, canvasW / 2, nameY);
+
+  // 3. Middle: Barcode & Barcode Code text
+  const barY = Math.round(nameY + nameFontSize * 1.15);
+  const priceHeight = price > 0 ? Math.round(canvasH * 0.20) : 0;
+  const codeTextHeight = Math.round(canvasH * 0.13);
+  const availBarHeight = Math.max(26, canvasH - barY - codeTextHeight - priceHeight - 6);
+
+  drawCode128OnCanvas(ctx, code, 8, barY, canvasW - 16, availBarHeight);
+
+  const codeY = barY + availBarHeight + 2;
+  const codeFontSize = Math.max(13, Math.round(canvasH * 0.11));
+  ctx.font = `bold ${codeFontSize}px monospace`;
+  ctx.fillText(code, canvasW / 2, codeY);
+
+  // 4. Bottom Line: Price in Lao Kip with badge border
+  if (price > 0) {
+    const priceText = `ລາຄາ: ${formatLAK(price)}`;
+    const priceFontSize = Math.max(14, Math.round(canvasH * 0.13));
+    ctx.font = `bold ${priceFontSize}px ${fontLaoStack}`;
+    const textMetrics = ctx.measureText(priceText);
+    const boxW = Math.min(canvasW - 10, Math.round(textMetrics.width + 14));
+    const boxH = Math.round(priceFontSize + 7);
+    const boxX = Math.round((canvasW - boxW) / 2);
+    const boxY = Math.round(canvasH - boxH - 3);
+
+    // Subtle crisp border matching the on-screen pill
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.5;
+    if (typeof ctx.roundRect === 'function') {
+      ctx.beginPath();
+      ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+      ctx.stroke();
+    } else {
+      ctx.strokeRect(boxX, boxY, boxW, boxH);
+    }
+    ctx.fillText(priceText, canvasW / 2, boxY + 3);
+  }
+
+  return canvas;
+}
+
+function updateBarcodeLivePreview() {
+  const container = document.getElementById('barcodeSinglePreview');
+  if (container) {
+    const canvas = generateStickerCanvas();
+    canvas.style.maxWidth = '100%';
+    canvas.style.maxHeight = '100%';
+    canvas.style.borderRadius = '8px';
+    canvas.style.boxShadow = '0 3px 10px rgba(0,0,0,0.15)';
+    canvas.style.border = '1px solid #e2e8f0';
+    container.innerHTML = '';
+    container.appendChild(canvas);
+  }
+
+  const badge = document.getElementById('barcodeSizeBadge');
+  if (badge) {
+    const size = getSelectedStickerSize();
+    badge.textContent = size.label;
+  }
 }
 
 function getSingleStickerHtml(forPrint = false) {
@@ -8099,24 +8253,6 @@ function getSingleStickerHtml(forPrint = false) {
       ${priceHtml}
     </div>
   `;
-}
-
-function updateBarcodeLivePreview() {
-  const container = document.getElementById('barcodeSinglePreview');
-  if (container) {
-    const size = getSelectedStickerSize();
-    // Dynamically adjust preview card aspect ratio and dimensions
-    const previewW = Math.min(270, Math.max(160, Math.round(size.width * 4.6)));
-    container.style.width = `${previewW}px`;
-    container.style.aspectRatio = `${size.width} / ${size.height}`;
-    container.innerHTML = getSingleStickerHtml(false);
-  }
-
-  const badge = document.getElementById('barcodeSizeBadge');
-  if (badge) {
-    const size = getSelectedStickerSize();
-    badge.textContent = size.label;
-  }
 }
 
 function updateBarcodeBatchPreview() {
@@ -8361,23 +8497,85 @@ async function sendPos8610BluetoothBytes(uint8Data) {
     } else {
       await pos8610BtCharacteristic.writeValue(chunk);
     }
+    // Small inter-packet delay for reliable BLE transmission on thermal printers
+    if (i + CHUNK_SIZE < uint8Data.length) {
+      await new Promise(r => setTimeout(r, 6));
+    }
   }
 }
 
-function generatePos8610TsplCommands(opts) {
-  const { name = 'ສິນຄ້າ', code = '1001', price = 0, qty = 1, widthMm = 80, heightMm = 50 } = opts;
-  let tspl = '';
-  tspl += `SIZE ${widthMm} mm, ${heightMm} mm\r\n`;
-  tspl += `GAP 2 mm, 0 mm\r\n`;
-  tspl += `DIRECTION 1\r\n`;
-  tspl += `CLS\r\n`;
-  tspl += `TEXT 30,25,"TSS24.BF2",0,1,1,"${name}"\r\n`;
-  tspl += `BARCODE 30,65,"128",60,1,0,2,3,"${code}"\r\n`;
-  if (price > 0) {
-    tspl += `TEXT 30,150,"TSS24.BF2",0,1,1,"Price: ${Number(price).toLocaleString()} LAK"\r\n`;
+// Convert HTML5 Canvas to 1-Bit Monochrome TSPL BITMAP Job
+// Ensures 100% pixel-perfect Lao text, Code 128 barcode, and price matching on-screen preview
+function convertCanvasToTsplJob(canvas, qty = 1, widthMm = 30, heightMm = 20) {
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+  const widthBytes = Math.ceil(width / 8);
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const pixels = imageData.data;
+
+  const bitmapBytes = new Uint8Array(widthBytes * height);
+  let byteIndex = 0;
+  for (let row = 0; row < height; row++) {
+    for (let colBytes = 0; colBytes < widthBytes; colBytes++) {
+      let compiledByte = 0;
+      for (let bit = 0; bit < 8; bit++) {
+        const col = (colBytes * 8) + bit;
+        if (col < width) {
+          const pixelOffset = (row * width + col) * 4;
+          const r = pixels[pixelOffset];
+          const g = pixels[pixelOffset + 1];
+          const b = pixels[pixelOffset + 2];
+          const a = pixels[pixelOffset + 3];
+          // Luminance calculation
+          const luminance = (r * 0.299 + g * 0.587 + b * 0.114);
+          // Dark pixel = 1 (printed dot in TSPL)
+          const isBlack = (a > 128 && luminance < 195);
+          if (isBlack) {
+            compiledByte |= (1 << (7 - bit));
+          }
+        }
+      }
+      bitmapBytes[byteIndex++] = compiledByte;
+    }
   }
-  tspl += `PRINT ${qty},1\r\n`;
-  return new TextEncoder().encode(tspl);
+
+  // TSPL Commands:
+  // SIZE: mm dimensions
+  // GAP: 2 mm label gap
+  // DIRECTION 1: Right-side up output
+  // CLS: Clear buffer
+  // BITMAP 0,0,width_bytes,height_dots,0,
+  const headerStr =
+    `SIZE ${widthMm} mm, ${heightMm} mm\r\n` +
+    `GAP 2 mm, 0 mm\r\n` +
+    `DIRECTION 1\r\n` +
+    `CLS\r\n` +
+    `BITMAP 0,0,${widthBytes},${height},0,`;
+
+  const encoder = new TextEncoder();
+  const headerBytes = encoder.encode(headerStr);
+  const footerBytes = encoder.encode(`\r\nPRINT ${qty},1\r\n`);
+
+  const totalLength = headerBytes.length + bitmapBytes.length + footerBytes.length;
+  const jobBytes = new Uint8Array(totalLength);
+  jobBytes.set(headerBytes, 0);
+  jobBytes.set(bitmapBytes, headerBytes.length);
+  jobBytes.set(footerBytes, headerBytes.length + bitmapBytes.length);
+
+  return jobBytes;
+}
+
+function generatePos8610TsplCommands(opts) {
+  const { name = 'ສິນຄ້າ', code = '1001', price = 0, qty = 1, widthMm = 30, heightMm = 20 } = opts;
+  const canvas = generateStickerCanvas({
+    name: name,
+    code: code,
+    price: price,
+    widthMm: widthMm,
+    heightMm: heightMm
+  });
+  return convertCanvasToTsplJob(canvas, qty, widthMm, heightMm);
 }
 
 async function printBarcodeViaBluetooth() {
@@ -8398,52 +8596,62 @@ async function printBarcodeViaBluetooth() {
     saveBarcodeToProduct(true);
   }
 
-  const codeVal = (document.getElementById('barcodeCodeInput')?.value || '').trim() || 'NO-CODE';
+  const codeVal = (document.getElementById('barcodeCodeInput')?.value || '').trim() || '1001';
   const priceVal = Number(document.getElementById('barcodePriceInput')?.value || 0);
   const qtyIn = document.getElementById('barcodeQtyInput');
   const qty = Math.max(1, Math.min(500, parseInt(qtyIn?.value, 10) || 1));
   const size = getSelectedStickerSize();
 
   try {
-    const tsplBytes = generatePos8610TsplCommands({
-      name: nameVal || 'ສິນຄ້າທົ່ວໄປ',
+    const canvas = generateStickerCanvas({
+      name: nameVal || 'ສິນຄ້າ',
       code: codeVal,
       price: priceVal,
-      qty: qty,
-      widthMm: size.width || 80,
-      heightMm: size.height || 50
+      widthMm: size.width || 30,
+      heightMm: size.height || 20
     });
 
-    await sendPos8610BluetoothBytes(tsplBytes);
+    const jobBytes = convertCanvasToTsplJob(canvas, qty, size.width || 30, size.height || 20);
+    await sendPos8610BluetoothBytes(jobBytes);
+
     if (typeof showToast === 'function') {
-      showToast(`✅ ສົ່ງຄຳສັ່ງພິມບາໂຄ້ດ ${qty} ດວງ ໄປຫາ POS-8610-L ສຳເລັດ!`, 'success');
+      showToast(`✅ ສົ່ງຄຳສັ່ງພິມບາໂຄ້ດ ${qty} ດວງ (${size.width}×${size.height}mm) ໄປຫາ POS-8610-L ສຳເລັດ!`, 'success');
     }
   } catch (err) {
     console.error('Print Bluetooth error:', err);
-    alert(`ເກີດຂໍ້ຜິດພາດໃນການສົ່ງພິມ: ${err.message || err}\n\nຫາກ Bluetooth ຂັດຂ້ອງ, ທ່ານສາມາດກົດປຸ່ມ "📄 ພິມຜ່ານລະບົບທົ່ວໄປ" ໄດ້.`);
+    alert(`ເກີດຂໍ້ຜິດພາດໃນການສົ່ງພິມຜ່ານ Bluetooth: ${err.message || err}`);
   }
 }
 
 async function testPrintPos8610Sample() {
-  if (pos8610BtCharacteristic) {
-    try {
-      const tsplBytes = generatePos8610TsplCommands({
-        name: '🥬 ຮ້ານຂາຍຜັກສົດ (Test)',
-        code: '1001',
-        price: 8000,
-        qty: 1,
-        widthMm: 80,
-        heightMm: 50
-      });
-      await sendPos8610BluetoothBytes(tsplBytes);
-      alert('✅ ສົ່ງຄຳສັ່ງພິມທົດສອບຜ່ານ Bluetooth ສຳເລັດ!');
-    } catch (e) {
-      alert('ການສົ່ງພິມທົດສອບຜ່ານ Bluetooth ຂັດຂ້ອງ, ຈະທົດສອບພິມຜ່ານລະບົບ Browser ແທນ.');
-      window.print();
+  if (!pos8610BtCharacteristic) {
+    const wantsConnect = confirm('ຍັງບໍ່ທັນໄດ້ເຊື່ອມຕໍ່ Bluetooth ກັບ POS-8610-L.\n\nກົດ "OK" ເພື່ອເຊື່ອມຕໍ່ Bluetooth ກ່ອນ!');
+    if (wantsConnect) {
+      await connectPos8610Bluetooth();
+      if (!pos8610BtCharacteristic) return;
+    } else {
+      return;
     }
-  } else {
-    alert('ຍັງບໍ່ທັນເຊື່ອມຕໍ່ Bluetooth. ລະບົບຈະເປີດໜ້າຕ່າງພິມຂອງລະບົບ (System Print) ເພື່ອທົດສອບ.');
-    window.print();
+  }
+
+  try {
+    const size = getSelectedStickerSize();
+    const testCanvas = generateStickerCanvas({
+      name: 'ຜັກກາດຂາວ (Test)',
+      code: '1001',
+      price: 10000,
+      widthMm: size.width || 30,
+      heightMm: size.height || 20
+    });
+    const jobBytes = convertCanvasToTsplJob(testCanvas, 1, size.width || 30, size.height || 20);
+    await sendPos8610BluetoothBytes(jobBytes);
+    if (typeof showToast === 'function') {
+      showToast('✅ ສົ່ງຄຳສັ່ງພິມທົດສອບ (30×20mm) ຜ່ານ Bluetooth ສຳເລັດ!', 'success');
+    } else {
+      alert('✅ ສົ່ງຄຳສັ່ງພິມທົດສອບ (30×20mm) ຜ່ານ Bluetooth ສຳເລັດ!');
+    }
+  } catch (e) {
+    alert(`ການສົ່ງພິມທົດສອບຜ່ານ Bluetooth ຂັດຂ້ອງ: ${e.message || e}`);
   }
 }
 
