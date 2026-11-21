@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ຮ້ານຂາຍຜັກສົດ - ລະບົບຂາຍໜ້າຮ້ານ & ບັນຊີສິນຄ້າ-ອຸປະກອນ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Phetsarath:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Lao:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=11" />
+</head>
+<body>
+
+  <!-- ປຸ່ມລອຍສາມຂີດ (Floating Hamburger Button ☰) ສຳລັບເປີດເມນູລະບົບ ໂດຍບໍ່ມີແຖບສີຟ້າດ້ານເທິງ ເພື່ອໃຫ້ໜ້າຈໍເຕັມ -->
+  <button type="button" class="sidebar-floating-btn no-print" id="sidebarToggleBtn" onclick="toggleSidebarDrawer()" title="ກົດເພື່ອເປີດເມນູລະບົບ">
+    ☰
+  </button>
+
+  <!-- ================================================= -->
+  <!-- SIDEBAR DRAWER (ເມນູຂ້າງເບື້ອງຊ້າຍ ແບບ Slide-out) -->
+  <!-- ================================================= -->
+  <div id="sidebarDrawerBackdrop" class="sidebar-drawer-backdrop no-print" onclick="closeSidebarDrawer()"></div>
+  <aside id="sidebarDrawer" class="sidebar-drawer no-print" aria-label="ເມນູລະບົບ">
+    <!-- Drawer Header: ສະແດງໂລໂກ້ຮ້ານ ແລະ ຊື່ຮ້ານຂາຍຜັກສົດ -->
+    <div class="sidebar-drawer-header">
+      <div style="display:flex;align-items:center;gap:0.65rem;">
+        <div class="sidebar-shop-logo" style="width:36px;height:36px;border-radius:50%;background:#ecfdf5;display:inline-flex;align-items:center;justify-content:center;font-size:1.4rem;border:2px solid #10b981;flex-shrink:0;">🥬</div>
+        <span class="sidebar-shop-name">ຮ້ານຂາຍຜັກສົດ</span>
+      </div>
+      <button type="button" class="sidebar-close-btn" onclick="closeSidebarDrawer()" title="ປິດເມນູ">✕</button>
+    </div>
+
+    <!-- User Profile Bar in Drawer: ສະແດງສະເພາະຊື່ (ເຈົ້າຂອງຮ້ານ) ບໍ່ມີພາສາອັງກິດ ແລະ ບໍ່ມີຄຳອະທິບາຍຢູ່ກ້ອງ -->
+    <div class="sidebar-user-info" id="sidebarUserBar">
+      <span class="sidebar-user-avatar" id="sideUserAvatarWrap" style="overflow:hidden;display:inline-flex;align-items:center;justify-content:center;">👤</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;font-size:0.95rem;color:#0f172a;" id="sideUsername">ເຈົ້າຂອງຮ້ານ</div>
+      </div>
+    </div>
+
+    <!-- Navigation List (ຕາມລຳດັບທີ່ກຳນົດ: ອອກບິນ, ລາຍການບິນ, ສິນຄ້າ, ບໍລິການ, ຊັບສິນຮ້ານ, ສະຫຼຸບ, ແຜນຈັດຊື້) -->
+    <nav class="sidebar-nav-list">
+      <!-- 1. ອອກບິນ (ໜ້າມາດຕະຖານ) -->
+      <button type="button" class="sidebar-nav-item active" data-tab="pos" onclick="navigateTo('pos')">
+        <span class="sidebar-item-icon">🛒</span>
+        <span class="sidebar-item-label">ອອກບິນ</span>
+        <span class="sidebar-item-badge" id="sidePosBadge" style="display:none;">0</span>
+      </button>
+
+      <!-- 2. ລາຍການບິນ -->
+      <button type="button" class="sidebar-nav-item" data-tab="history" onclick="navigateTo('history')">
+        <span class="sidebar-item-icon">📊</span>
+        <span class="sidebar-item-label">ລາຍການບິນ</span>
+        <span class="sidebar-item-badge" id="sideUnpaidBadge" style="display:none;">0</span>
+      </button>
+
+      <!-- 3. ສິນຄ້າ -->
+      <button type="button" class="sidebar-nav-item" data-tab="products" onclick="navigateTo('products')">
+        <span class="sidebar-item-icon">📦</span>
+        <span class="sidebar-item-label">ສິນຄ້າ</span>
+        <span class="sidebar-item-badge" id="sideLowStockBadge" style="display:none;">0</span>
+      </button>
+
+      <!-- 4. ບໍລິການ (ແຍກອອກຈາກເມນູ ສິນຄ້າ) -->
+      <button type="button" class="sidebar-nav-item" data-tab="services" onclick="navigateTo('services')">
+        <span class="sidebar-item-icon">📸</span>
+        <span class="sidebar-item-label">ບໍລິການ</span>
+        <span class="sidebar-item-badge" id="sideServiceBadge" style="display:none;">0</span>
+      </button>
+
+      <!-- 5. ຊັບສິນຮ້ານ (ປ່ຽນຈາກບັນຊີອຸປະກອນ) -->
+      <button type="button" class="sidebar-nav-item" data-tab="machines" onclick="navigateTo('machines')">
+        <span class="sidebar-item-icon">🏢</span>
+        <span class="sidebar-item-label">ຊັບສິນຮ້ານ</span>
+        <span class="sidebar-item-badge" id="sideMachineAlertBadge" style="display:none;">0</span>
+      </button>
+
+      <!-- 6. ສະຫຼຸບ (ປ່ຽນຈາກລາຍຮັບລາຍຈ່າຍ) -->
+      <button type="button" class="sidebar-nav-item" data-tab="summary" onclick="navigateTo('summary')">
+        <span class="sidebar-item-icon">💰</span>
+        <span class="sidebar-item-label">ສະຫຼຸບ</span>
+      </button>
+
+      <!-- 7. ແຜນຈັດຊື້ -->
+      <button type="button" class="sidebar-nav-item" data-tab="purchase" onclick="navigateTo('purchase')">
+        <span class="sidebar-item-icon">📝</span>
+        <span class="sidebar-item-label">ແຜນຈັດຊື້</span>
+      </button>
+    </nav>
+
+    <!-- Drawer Footer Actions -->
+    <div class="sidebar-drawer-footer">
+      <button type="button" class="sidebar-footer-btn" style="grid-column:1 / -1;width:100%;" onclick="closeSidebarDrawer(); openGSheetModal();">
+        <span>⚙️ ຕັ້ງຄ່າ</span>
+        <span id="gsheetStatusDot" class="gear-status-dot" style="font-size:0.65rem;">⚪</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Workspace Content -->
+  <main class="main-content">
+
+    <!-- ================================================= -->
+    <!-- TAB 1: POS & BILLING (ORANGE PHOTO CATALOG + TICKET) -->
+    <!-- ================================================= -->
+    <section id="tab-pos" class="tab-panel active">
+      <input
+        type="file"
+        id="quickProductImageInput"
+        accept="image/*"
+        style="display:none;"
+        onchange="handleQuickProductImageUpload(event)"
+      />
+
+      <div class="pos-terminal-frame">
+        <!-- Left Side: Top Orange Category Bar + Visual Photo Catalog Grid -->
+        <div class="pos-catalog-panel">
+          <div class="pos-catalog-topbar" id="posCategoryTabs">
+            <button class="pos-cat-tab active" data-cat="service" onclick="setPOSCategory('service')">
+              📸 ງານບໍລິການ
+            </button>
+            <button class="pos-cat-tab" data-cat="paper" onclick="setPOSCategory('paper')">
+              📄 ເຈ້ຍ ແລະ ໂຟໂຕ້
+            </button>
+            <button class="pos-cat-tab" data-cat="ink" onclick="setPOSCategory('ink')">
+              🖨️ ໝຶກ ແລະ ແກນໝຶກ
+            </button>
+            <button class="pos-cat-tab" data-cat="stationery" onclick="setPOSCategory('stationery')">
+              📎 ເຄື່ອງຂຽນ
+            </button>
+          </div>
+
+          <!-- Photo Tile Grid -->
+          <div id="posProductGrid" class="pos-photo-grid"></div>
+        </div>
+
+        <!-- Right Side: Ticket / Active Bill Details & Orange Charge Bar -->
+        <div class="pos-ticket-panel" id="posTicketPanel">
+          <div class="pos-ticket-header">
+            <div class="pos-ticket-header-actions">
+              <button type="button" class="pos-head-btn pos-head-btn-hold" onclick="holdCurrentBill()">
+                ⏸️ ພັກບິນ
+              </button>
+              <button type="button" class="pos-head-btn pos-head-btn-list" onclick="openHeldBillsModal()">
+                📋 ລາຍການພັກບິນ <span id="heldBillsCountBadge" class="held-count-pill">0</span>
+              </button>
+              <button type="button" class="pos-head-btn pos-head-btn-clear" onclick="clearCart()">
+                🗑️ ລ້າງບິນ
+              </button>
+            </div>
+          </div>
+
+          <!-- Background Barcode Camera (Hidden UI - Runs automatically in background) -->
+          <div class="pos-ticket-cam-center-wrap" style="display:none !important;">
+            <button type="button" id="posTicketCamToggleBtn" class="pos-ticket-cam-circle-btn" onclick="togglePosTicketCamera(event)">
+              <span class="cam-icon-only">📷</span>
+              <span id="posTicketCamDot" class="cam-pulse-dot" style="display:none;"></span>
+            </button>
+          </div>
+
+          <div id="posTicketCameraBox" class="pos-ticket-camera-box" style="position:fixed;bottom:0;right:0;width:2px;height:2px;opacity:0.001;pointer-events:none;overflow:hidden;z-index:-1;" aria-hidden="true">
+            <video id="posTicketVideo" autoplay playsinline muted class="pos-ticket-video" style="width:320px;height:240px;"></video>
+          </div>
+
+          <div id="posScanFeedback" class="pos-scan-feedback" style="display:none;margin-bottom:0.4rem;"></div>
+
+          <!-- ຊ່ອງຊື່ລູກຄ້າ ແລະ ເບີໂທ ຖືກເຊື່ອງໄວ້ໃນໃບບິນ (ຈະເດັ້ງຂຶ້ນມາເມື່ອກົດພິມບິນ) -->
+          <div class="pos-ticket-customer" style="display:none !important;">
+            <input
+              type="text"
+              id="posCustomerName"
+              class="input"
+              placeholder="👤 ຊື່ລູກຄ້າ / ຫ້ອງການ (ຖ້າມີ)"
+            />
+            <input
+              type="text"
+              id="posCustomerPhone"
+              class="input"
+              placeholder="📞 ເບີໂທ / WhatsApp"
+            />
+          </div>
+
+          <div id="posCartItems" class="pos-ticket-items"></div>
+
+          <div class="pos-ticket-footer">
+            <div class="pos-ticket-Totals">
+              <div class="pos-ticket-row total" style="border-top:none;padding-top:0;margin-top:0;">
+                <span>ລວມທັງໝົດ</span>
+                <span id="posTotalText">0 ກີບ</span>
+              </div>
+            </div>
+
+            <div class="payment-methods">
+              <button class="pay-method-btn active" data-method="cash" onclick="selectPaymentMethod('cash')">
+                <span>💵</span>
+                <span>ເງິນສົດ</span>
+              </button>
+              <button class="pay-method-btn" data-method="bcel" onclick="selectPaymentMethod('bcel', true)">
+                <img src="bcel-logo.png" alt="BCEL One" class="pay-method-icon-img" />
+                <span>BCEL One QR</span>
+              </button>
+              <button class="pay-method-btn" data-method="credit" onclick="selectPaymentMethod('credit')">
+                <span>📝</span>
+                <span>ຕິດໜີ້</span>
+              </button>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.55rem;margin-top:0.35rem;">
+              <button type="button" class="pos-btn-charge pos-btn-receive" onclick="checkoutReceiveOnly()">
+                💵 ຮັບເງິນ
+              </button>
+              <button type="button" class="pos-btn-charge pos-btn-print" onclick="checkoutAndPrint()">
+                🖨️ ພິມບິນ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Floating Cart Bar -->
+      <div id="posMobileCartBar" class="pos-mobile-cart-bar" onclick="scrollToPosTicket()">
+        <div class="pos-mobile-cart-info">
+          <span class="pos-mobile-cart-icon">🛒</span>
+          <span id="posMobileCartCount">0 ລາຍການ</span>
+          <span class="pos-mobile-cart-dot">•</span>
+          <span id="posMobileCartTotal" class="pos-mobile-cart-total">0 ກີບ</span>
+        </div>
+        <button type="button" class="pos-mobile-cart-btn">ໄປທີ່ບິນ ➔</button>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- TAB 2: PRODUCT & SERVICE CATALOG (ສິນຄ້າ ແລະ ບໍລິການ) -->
+    <!-- ================================================= -->
+    <section id="tab-catalog" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+            <span id="catalogSectionTitle">📦 ສິນຄ້າ</span>
+            <span id="catalogCountBadge" style="background:#ffedd5;color:#c2410c;border:1.5px solid #fdba74;padding:0.2rem 0.75rem;border-radius:999px;font-size:0.85rem;font-weight:800;">0 ລາຍການ</span>
+          </div>
+          <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+            <select id="catalogCategoryFilter" class="select" style="width:230px;" onchange="renderCatalogTable()">
+              <option value="all">ທຸກໝວດໝູ່</option>
+            </select>
+            <button class="btn btn-primary btn-sm" id="catalogAddProductBtn" onclick="openProductModal()">
+              ເພີ່ມສິນຄ້າ
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" id="catalogBarcodeStudioBtn" onclick="openBarcodeStudioModal()" style="border-color:#6366f1;color:#4f46e5;background:#eef2ff;font-weight:700;display:inline-flex;align-items:center;gap:0.35rem;" title="ອອກແບບ, ສ້າງ ແລະ ສັ່ງພິມບາໂຄ້ດ">
+              🏷️ ສ້າງບາໂຄ້ດ
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap catalog-table-wrap">
+          <table class="catalog-adapt-table">
+            <thead>
+              <tr>
+                <th style="width:60px;text-align:center;">ຮູບພາບ</th>
+                <th class="win-only-col">ລະຫັດ</th>
+                <th>ຊື່ສິນຄ້າ / ບໍລິການ</th>
+                <th class="win-only-col">ປະເພດ</th>
+                <th class="win-only-col">ຕົ້ນທຶນ</th>
+                <th style="text-align:right;">ລາຄາຂາຍ</th>
+                <th class="win-only-col">ກຳໄລ/ໜ່ວຍ</th>
+                <th style="text-align:center;">ສະຕັອກຄົງເຫຼືອ</th>
+                <th class="win-only-col" style="text-align:center;">ຈັດການ</th>
+              </tr>
+            </thead>
+            <tbody id="catalogTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- Catalog Bottom Summary Bar -->
+        <div class="catalog-summary-bar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;padding:0.85rem 1.25rem;background:#fff7ed;border-top:2px solid #fdba74;border-radius:0 0 var(--radius-md) var(--radius-md);">
+          <div style="font-weight:800;font-size:0.95rem;color:#9a3412;display:flex;align-items:center;gap:0.4rem;">
+            <span>📊 ສະຫຼຸບລວມທັງໝົດ:</span>
+            <span id="catalogSummaryItemCount" style="font-size:0.82rem;font-weight:700;background:#ffedd5;color:#c2410c;padding:0.15rem 0.55rem;border-radius:999px;">0 ລາຍການ</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+            <div style="display:flex;flex-direction:column;gap:0.1rem;">
+              <span style="font-size:0.74rem;color:#64748b;font-weight:700;">📉 ຕົ້ນທຶນລວມ</span>
+              <strong id="catalogSummaryCost" style="font-size:1.05rem;color:#1e293b;font-variant-numeric:tabular-nums;">0 ກີບ</strong>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.1rem;">
+              <span style="font-size:0.74rem;color:#c2410c;font-weight:700;">🏷️ ລາຄາຂາຍລວມ</span>
+              <strong id="catalogSummaryPrice" style="font-size:1.15rem;color:#ea580c;font-weight:900;font-variant-numeric:tabular-nums;">0 ກີບ</strong>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.1rem;">
+              <span style="font-size:0.74rem;color:#047857;font-weight:700;">📈 ກຳໄລລວມ</span>
+              <strong id="catalogSummaryProfit" style="font-size:1.05rem;color:#059669;font-weight:900;font-variant-numeric:tabular-nums;">+0 ກີບ</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- TAB 3: MACHINERY & ASSET TRACKER (ຊັບສິນຮ້ານ)      -->
+    <!-- ================================================= -->
+    <section id="tab-machines" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+            <span>🏢 ຊັບສິນຮ້ານ</span>
+            <span id="machineCountBadge" style="background:#ffedd5;color:#c2410c;border:1.5px solid #fdba74;padding:0.18rem 0.7rem;border-radius:999px;font-size:0.82rem;font-weight:800;">0 ລາຍການ</span>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="openMachineModal()">
+            ເພີ່ມຊັບສິນ
+          </button>
+        </div>
+
+        <div class="table-wrap machine-table-wrap">
+          <table class="machine-compact-table">
+            <thead>
+              <tr>
+                <th style="width:68px;text-align:center;">ຮູບພາບ</th>
+                <th>ຊື່ ອຸປະກອນ</th>
+                <th style="text-align:right;">ມູນຄ່າ</th>
+                <th style="text-align:center;">ສະຖານະ</th>
+                <th class="win-only-col" style="text-align:center;width:160px;">ຈັດການ</th>
+              </tr>
+            </thead>
+            <tbody id="machineGrid"></tbody>
+            <tfoot>
+              <tr style="background:#fff7ed;border-top:2.5px solid #f97316;">
+                <td colspan="2" style="text-align:right;font-weight:800;font-size:0.98rem;color:#9a3412;padding:0.85rem 0.75rem;">
+                  📊 ລວມມູນຄ່າອຸປະກອນທັງໝົດ:
+                </td>
+                <td id="machineTotalValueText" style="text-align:right;font-weight:900;font-size:1.08rem;color:#ea580c;font-variant-numeric:tabular-nums;padding:0.85rem 0.75rem;white-space:nowrap;">
+                  0 ກີບ
+                </td>
+                <td></td>
+                <td class="win-only-col"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- TAB 4: SALES HISTORY & REPORTS                    -->
+    <!-- ================================================= -->
+    <section id="tab-history" class="tab-panel">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+            <span>📊 ລາຍການບິນ</span>
+            <span id="kpiTotalBills" style="background:var(--primary-light);color:var(--primary);border:1.5px solid #93c5fd;padding:0.2rem 0.75rem;border-radius:999px;font-size:0.85rem;font-weight:800;">0 ໃບບິນ</span>
+          </div>
+          <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <!-- Single Dynamic Summary Pill (ປ່ຽນຕາມຕົວເລືອກ: ທຸກໃບບິນ / ຊຳລະເງິນແລ້ວ / ຕິດໜີ້) -->
+            <div id="historySingleSummaryPill" class="history-summary-pill" style="background:#eff6ff;border:1.5px solid #93c5fd;" title="ຍອດລວມຕາມສະຖານະບິນທີ່ເລືອກ">
+              <span id="historySingleSummaryLabel" style="color:#1e40af;font-weight:700;">📊 ຍອດຂາຍທັງໝົດ:</span>
+              <strong id="historySingleSummaryValue" style="color:#1d4ed8;font-weight:900;font-variant-numeric:tabular-nums;">0 ກີບ</strong>
+            </div>
+
+            <!-- UNIFIED PERIOD FILTER (ທັງໝົດ / ມື້ນີ້ / ລາຍວັນ / ລາຍເດືອນ / ລາຍປີ) -->
+            <div class="unified-period-filter">
+              <select id="historyPeriodType" class="select" style="border:none;background:#f1f5f9;font-weight:800;padding:0.4rem 0.65rem;border-radius:6px;font-size:0.86rem;color:#1e293b;cursor:pointer;" onchange="onHistoryPeriodTypeChange()">
+                <option value="all">🌐 ທັງໝົດ</option>
+                <option value="today">☀️ ມື້ນີ້</option>
+                <option value="day">📅 ລາຍວັນ</option>
+                <option value="month">📆 ລາຍເດືອນ</option>
+                <option value="year">🏛️ ລາຍປີ</option>
+              </select>
+
+              <!-- ວັນທີ (ສຳລັບລາຍວັນ: ເລືອກມື້ໃດກໍໄດ້ໃນເດືອນ) -->
+              <input type="date" id="historyDayPicker" class="input" style="display:none;width:145px;border:1px solid #cbd5e1;padding:0.35rem 0.5rem;font-weight:700;border-radius:6px;font-size:0.85rem;background:#f8fafc;" onchange="renderSalesHistory()" title="ເລືອກວັນທີ (ເບິ່ງລາຍວັນ)" />
+
+              <!-- ເດືອນ (ສຳລັບລາຍເດືອນ) -->
+              <select id="historyMonthPicker" class="select" style="display:none;width:175px;border:1px solid #cbd5e1;padding:0.35rem 0.6rem;font-weight:700;border-radius:6px;font-size:0.85rem;background:#f8fafc;" onchange="renderSalesHistory()">
+              </select>
+
+              <!-- ປີ (ສຳລັບລາຍປີ) -->
+              <select id="historyYearPicker" class="select" style="display:none;width:130px;border:1px solid #cbd5e1;padding:0.35rem 0.6rem;font-weight:700;border-radius:6px;font-size:0.85rem;background:#f8fafc;" onchange="renderSalesHistory()">
+              </select>
+            </div>
+            <select id="historyStatusFilter" class="select" style="width:195px;" onchange="renderSalesHistory()">
+              <option value="all">ສະແດງທຸກໃບບິນ</option>
+              <option value="paid">✅ ຊຳລະເງິນແລ້ວ</option>
+              <option value="unpaid">⏳ ຕິດໜີ້</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrap history-table-wrap">
+          <table class="history-compact-table">
+            <thead>
+              <tr>
+                <th class="win-only-col">ວັນທີ</th>
+                <th class="win-only-col">ຊື່ລູກຄ້າ</th>
+                <th>ຊື່ສິນຄ້າ</th>
+                <th class="win-only-col">ວິທີການຊຳລະ</th>
+                <th style="text-align:right;">ຍອດສຸດທິ</th>
+                <th style="text-align:center;">ສະຖານະ</th>
+                <th class="win-only-col" style="text-align:center;">ຈັດການ</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- TAB 5: ລາຍຮັບ-ລາຍຈ່າຍ (EXPENSES FIRST, INCOME BELOW) -->
+    <!-- ================================================= -->
+    <section id="tab-summary" class="tab-panel">
+      <!-- 1. SUMMARY TOP FILTER TOOLBAR -->
+      <div class="summary-top-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+          <div style="display:flex;align-items:center;gap:0.6rem;">
+            <span style="font-size:1.35rem;">💰</span>
+            <div>
+              <h2 style="margin:0;font-size:1.15rem;font-weight:900;color:#0f172a;">ສະຫຼຸບ</h2>
+              <div style="display:none;font-size:0.75rem;color:#64748b;font-weight:600;" id="summaryCurrentPeriodBadge">ສະຫຼຸບຂໍ້ມູນທຸກເວລາ</div>
+            </div>
+          </div>
+
+          <!-- UNIFIED PERIOD FILTER (ທັງໝົດ / ມື້ນີ້ / ລາຍວັນ / ລາຍເດືອນ / ລາຍປີ) -->
+          <div class="unified-period-filter">
+            <select id="summaryPeriodType" class="select" style="border:none;background:#f1f5f9;font-weight:800;padding:0.4rem 0.65rem;border-radius:6px;font-size:0.86rem;color:#1e293b;cursor:pointer;" onchange="onSummaryPeriodTypeChange()">
+              <option value="all">🌐 ທັງໝົດ</option>
+              <option value="today">☀️ ມື້ນີ້</option>
+              <option value="day">📅 ລາຍວັນ</option>
+              <option value="month">📆 ລາຍເດືອນ</option>
+              <option value="year">🏛️ ລາຍປີ</option>
+            </select>
+
+            <!-- ວັນທີ (ສຳລັບລາຍວັນ: ເລືອກມື້ໃດກໍໄດ້ໃນເດືອນ) -->
+            <input type="date" id="summaryDayPicker" class="input" style="display:none;width:145px;border:1px solid #cbd5e1;padding:0.35rem 0.5rem;font-weight:700;border-radius:6px;font-size:0.85rem;background:#f8fafc;" onchange="renderSummaryPage()" title="ເລືອກວັນທີ (ເບິ່ງລາຍວັນ)" />
+
+            <!-- ເດືອນ (ສຳລັບລາຍເດືອນ) -->
+            <select id="summaryMonthPicker" class="select" style="display:none;width:175px;border:1px solid #cbd5e1;padding:0.35rem 0.6rem;font-weight:700;border-radius:6px;font-size:0.85rem;background:#f8fafc;" onchange="renderSummaryPage()">
+            </select>
+
+            <!-- ປີ (ສຳລັບລາຍປີ) -->
+            <select id="summaryYearPicker" class="select" style="display:none;width:130px;border:1px solid #cbd5e1;padding:0.35rem 0.6rem;font-weight:700;border-radius:6px;font-size:0.85rem;background:#f8fafc;" onchange="renderSummaryPage()">
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. DUAL SIDE-BY-SIDE GRID: EXPENSES (LEFT) vs INCOME (RIGHT) - ຍ້າຍຂຶ້ນມາເທິງ -->
+      <div class="income-expense-dual-container" style="margin-top:0.75rem;margin-bottom:1.5rem;">
+        <!-- 💸 ລາຍການລາຍຈ່າຍ (EXPENSES - LEFT WINDOW - RED THEME) -->
+        <div id="detailSectionExpense" class="card expense-theme-card" style="margin-bottom:0;">
+          <div class="card-header expense-theme-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+            <div class="card-title expense-theme-title" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+              <span>💸 ລາຍຈ່າຍ</span>
+              <!-- ສະແດງຈຳນວນລວມຂອງລາຍຈ່າຍ ຢູ່ໃນຫົວຕາຕະລາງ -->
+              <div class="history-summary-pill" style="background:#ffffff;border:1.5px solid #fecaca;box-shadow:0 1px 4px rgba(0,0,0,0.08);padding:0.25rem 0.85rem;" title="ລວມຍອດລາຍຈ່າຍທັງໝົດ">
+                <span style="color:#991b1b;font-weight:700;">ລວມ:</span>
+                <strong id="summaryExpenseTotalBadge" style="color:#dc2626;font-weight:900;font-variant-numeric:tabular-nums;font-size:1.05rem;">0 ກີບ</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- ປຸ່ມສ້າງລາຍຈ່າຍ ຍ້າຍລົງມາໃສ່ໃນກ້ອງແຖບຫົວຕາຕະລາງ -->
+          <div class="category-list-toolbar" style="padding:0.75rem 1.15rem;background:#fff5f5;border-bottom:1.5px solid #fee2e2;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;">
+            <button type="button" class="btn btn-sm" style="background:#dc2626;color:#ffffff;font-weight:800;border:none;box-shadow:0 2px 6px rgba(220,38,38,0.25);padding:0.45rem 1.1rem;border-radius:6px;cursor:pointer;" onclick="openExpenseModal()">
+              ເພີ່ມລາຍຈ່າຍ
+            </button>
+          </div>
+
+          <!-- ລາຍຈ່າຍແຕ່ລະໝວດ ເປັນລິດລົງມາ (ຄລິກເພື່ອເບິ່ງລາຍລະອຽດ) -->
+          <div id="expenseCategoryAccordionList" class="category-accordion-list"></div>
+        </div>
+
+        <!-- 💰 ລາຍຮັບ (INCOME LIST - RIGHT WINDOW - GREEN THEME) -->
+        <div id="detailSectionIncome" class="card income-theme-card" style="margin-bottom:0;">
+          <div class="card-header income-theme-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+            <div class="card-title income-theme-title" style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+              <span>💰 ລາຍຮັບ</span>
+              <!-- ສະແດງຈຳນວນລວມຂອງລາຍຮັບ ຢູ່ໃນຫົວຕາຕະລາງ -->
+              <div class="history-summary-pill" style="background:#ffffff;border:1.5px solid #a7f3d0;box-shadow:0 1px 4px rgba(0,0,0,0.08);padding:0.25rem 0.85rem;" title="ລວມຍອດລາຍຮັບທັງໝົດ">
+                <span style="color:#065f46;font-weight:700;">ລວມ:</span>
+                <strong id="summaryIncomeTotalBadge" style="color:#059669;font-weight:900;font-variant-numeric:tabular-nums;font-size:1.05rem;">0 ກີບ</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- ປຸ່ມສ້າງລາຍຮັບ ຍ້າຍລົງມາໃສ່ໃນຕາຕະລາງ (ກ້ອງແຖບຫົວຕາຕະລາງ) -->
+          <div class="category-list-toolbar" style="padding:0.75rem 1.15rem;background:#f0fdf4;border-bottom:1.5px solid #dcfce7;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.6rem;">
+            <button type="button" class="btn btn-sm" style="background:#059669;color:#ffffff;font-weight:800;border:none;box-shadow:0 2px 6px rgba(5,150,105,0.25);padding:0.45rem 1.1rem;border-radius:6px;cursor:pointer;" onclick="openIncomeModal()">
+              ເພີ່ມລາຍຮັບ
+            </button>
+          </div>
+
+          <!-- ລາຍຮັບແຕ່ລະໝວດ ເປັນລິດລົງມາ (ຄລິກເພື່ອເບິ່ງລາຍລະອຽດ) -->
+          <div id="incomeCategoryAccordionList" class="category-accordion-list"></div>
+        </div>
+      </div>
+
+      <!-- 3. FINANCIAL SUMMARY LIST REPORT (ຖັດລົງໄປ ລາຍງານເປັນ list 8 ລາຍການ) -->
+      <div id="detailSectionProfit" class="card summary-report-card">
+        <div class="card-header summary-report-header">
+          <div class="card-title" style="display:flex;align-items:center;gap:0.6rem;font-size:1.1rem;font-weight:900;color:#1e293b;">
+            <span>📊 ສະຫຼຸບການເງິນ</span>
+          </div>
+          <div id="summaryReportPeriodTag" class="summary-period-pill">ທັງໝົດ</div>
+        </div>
+
+        <!-- 8 ORDERED LIST ITEMS -->
+        <div class="financial-report-list">
+          <!-- 1. ຊັບສິນຮ້ານ: (ປ່ຽນຈາກຕົ້ນທຶນອຸປະກອນ ແລະ ສິນຄ້າ) -->
+          <div class="fin-list-item fin-list-asset">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#ccfbf1;color:#0f766e;">🏢</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">ຊັບສິນຮ້ານ:</div>
+                <div class="fin-list-sub">
+                  <span onclick="switchTab('machines')" class="sub-link" title="ຄລິກໄປໜ້າຊັບສິນຮ້ານ">🖨️ ອຸປະກອນ: <strong id="finStatMachineValue">0 ກີບ</strong> <span id="finStatMachineCount"></span></span>
+                  <span class="sub-sep">•</span>
+                  <span onclick="switchTab('products')" class="sub-link" title="ຄລິກໄປໜ້າສິນຄ້າ">📦 ສິນຄ້າໃນສາງ: <strong id="finStatShopInventoryCost">0 ກີບ</strong> <span id="finStatShopInventoryCount"></span></span>
+                </div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="finStatCombinedAssetCost" style="color:#0f766e;">0 ກີບ</div>
+            </div>
+          </div>
+
+          <!-- 2. ລູກຄ້າຕິດໜີ້: -->
+          <div class="fin-list-item fin-list-debt is-clickable" id="finCardCustomerDebt" onclick="toggleCustomerDebtDetail()" title="ຄລິກເພື່ອເບິ່ງ / ເຊື່ອງ ລາຍການບິນທີ່ລູກຄ້າຕິດໜີ້">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#fef3c7;color:#b45309;">⏳</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">
+                  <span>ລູກຄ້າຕິດໜີ້:</span>
+                  <span class="fin-click-hint">🔍 ເບິ່ງລາຍລະອຽດ</span>
+                </div>
+                <div class="fin-list-sub" id="finStatCustomerDebtCount">0 ໃບບິນຄ້າງຊຳລະ</div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="finStatCustomerDebt" style="color:#d97706;">0 ກີບ</div>
+            </div>
+          </div>
+
+          <!-- 3. ລາຍຮັບ: -->
+          <div class="fin-list-item fin-list-income">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#dcfce7;color:#15803d;">💰</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">ລາຍຮັບ:</div>
+                <div class="fin-list-sub" id="kpiHeroIncomeCount">0 ລາຍການຂາຍ</div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="kpiHeroIncome" style="color:#16a34a;">0 ກີບ</div>
+            </div>
+          </div>
+
+          <!-- 4. ລາຍຈ່າຍ: -->
+          <div class="fin-list-item fin-list-expense">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#fee2e2;color:#b91c1c;">💸</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">ລາຍຈ່າຍ:</div>
+                <div class="fin-list-sub" id="kpiHeroCostBreakdown">ຕົ້ນທຶນ: 0 | ລາຍຈ່າຍ: 0</div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="kpiHeroCost" style="color:#dc2626;">0 ກີບ</div>
+            </div>
+          </div>
+
+          <!-- 5. ໜີ້ຕ້ອງສົ່ງ: -->
+          <div class="fin-list-item fin-list-payable is-clickable" id="finCardPayableDebt" onclick="togglePayableDebtDetail()" title="ຄລິກເພື່ອເບິ່ງ / ເຊື່ອງ ລາຍການສິນຄ້າຊື້ເຂົ້າຍັງຄ້າງຈ່າຍ">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#ffedd5;color:#c2410c;">📝</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">
+                  <span>ໜີ້ຕ້ອງສົ່ງ:</span>
+                  <span class="fin-click-hint">🔍 ເບິ່ງລາຍລະອຽດ</span>
+                </div>
+                <div class="fin-list-sub" id="finStatPayableDebtCount">ສິນຄ້າຄ້າງຈ່າຍ</div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="finStatPayableDebt" style="color:#ea580c;">0 ກີບ</div>
+            </div>
+          </div>
+
+          <!-- 6. ຍອດຍົກມາ: -->
+          <div class="fin-list-item fin-list-brought">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#e0e7ff;color:#4338ca;">📅</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">ຍອດຍົກມາ:</div>
+                <div class="fin-list-sub" id="finStatBroughtSub">ຍອດສະສົມຍົກມາ</div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="finStatBroughtForward" style="color:#4f46e5;">0 ກີບ</div>
+            </div>
+          </div>
+
+          <!-- 7. ເງິນສົດໝູນວຽນປະຈຸບັນ: -->
+          <div class="fin-list-item fin-list-cash">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#ecfdf5;color:#047857;">💵</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">ເງິນສົດໝູນວຽນປະຈຸບັນ:</div>
+                <div class="fin-list-sub" id="finStatCashSub">ເງິນສົດຕົວຈິງ</div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="finStatCashInStore" style="color:#059669;">0 ກີບ</div>
+            </div>
+          </div>
+
+          <!-- 8. ແຜນຈັດຊື້: -->
+          <div class="fin-list-item fin-list-plan is-clickable" onclick="switchTab('purchase')" title="ຄລິກເພື່ອໄປໜ້າແຜນຈັດຊື້">
+            <div class="fin-list-left">
+              <div class="fin-list-icon" style="background:#f3e8ff;color:#7e22ce;">📋</div>
+              <div class="fin-list-info">
+                <div class="fin-list-name">
+                  <span>ແຜນຈັດຊື້:</span>
+                  <span class="fin-click-hint">↗ ໄປໜ້າແຜນ</span>
+                </div>
+                <div class="fin-list-sub" id="finStatPendingPlanCount">0 ລາຍການລໍຖ້າຊື້</div>
+              </div>
+            </div>
+            <div class="fin-list-right">
+              <div class="fin-list-val" id="finStatPendingPlan" style="color:#9333ea;">0 ກີບ</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Drill-down Detail Panel for Customer Debt / Accounts Payable -->
+        <div id="financialDrilldownContainer" style="display:none;margin:1.25rem 1.4rem;"></div>
+
+        <!-- Bottom Net Summary Bar (ກຳໄລ / ຂາດທຶນສຸດທິ) -->
+        <div class="summary-net-footer" id="kpiHeroNetCard">
+          <div class="net-footer-left">
+            <span class="net-footer-title">📊 ສະຫຼຸບ ກຳໄລ / ຂາດທຶນສຸດທິ:</span>
+            <span id="kpiHeroNetStatus" class="net-footer-status">🟢 ສະຫຼຸບຜົນກຳໄລ</span>
+          </div>
+          <div class="net-footer-right">
+            <span class="net-footer-val" id="kpiHeroNet">0 ກີບ</span>
+          </div>
+        </div>
+
+        <!-- Hidden helper elements for scripts requiring formula & plan purchase metrics -->
+        <div style="display:none;" id="summaryFormulaHelpers">
+          <span id="formulaIncome">+0 ກີບ</span>
+          <span id="formulaProdCost">-0 ກີບ</span>
+          <span id="formulaOpExp">-0 ກີບ</span>
+          <span id="formulaNet">+0 ກີບ</span>
+          <div id="formulaResultBox"></div>
+          <span id="finStatPurchasedPlan">0 ກີບ</span>
+          <span id="finStatPurchasedPlanCount">0 ລາຍການຊື້ແລ້ວ</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- TAB 6: PURCHASE PLAN (ແຜນຊື້ສິນຄ້າເຂົ້າຮ້ານ)         -->
+    <!-- ================================================= -->
+    <section id="tab-purchase" class="tab-panel">
+      <!-- 1. PENDING PURCHASE PLAN (ສິນຄ້າຍັງບໍ່ໄດ້ຊື້) -->
+      <div class="card" style="margin-bottom:1.5rem;">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+          <div class="card-title" style="display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+            <span>📝 ແຜນຈັດຊື້</span>
+            <span id="purchaseCountBadge" style="background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d;padding:0.2rem 0.75rem;border-radius:999px;font-size:0.84rem;font-weight:800;">0 ລາຍການ</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+            <select id="purchaseMonthFilter" class="select" style="width:205px;font-weight:700;background:#ffffff;" onchange="renderPurchasePlanPage()">
+              <option value="all">📅 ທຸກເດືອນ</option>
+            </select>
+            <button type="button" class="btn btn-primary btn-sm" onclick="openPurchaseModal()">
+              ເພີ່ມແຜນຊື້
+            </button>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="purchase-adapt-table">
+            <thead>
+              <tr>
+                <th class="win-only-col" style="width:80px;text-align:center;">ເລກລຳດັບ</th>
+                <th>ຊື່ລາຍການ</th>
+                <th class="win-only-col" style="text-align:right;">ລາຄາ (ກີບ)</th>
+                <th style="text-align:center;width:140px;">ຈຳນວນ</th>
+                <th style="text-align:right;">ລາຄາລວມ (ກີບ)</th>
+                <th class="win-only-col" style="text-align:center;width:220px;">ຈັດການ</th>
+              </tr>
+            </thead>
+            <tbody id="purchaseTableBody"></tbody>
+            <tfoot>
+              <tr class="purchase-summary-row">
+                <td class="win-only-col"></td>
+                <td style="text-align:right;font-weight:800;font-size:0.98rem;color:#9a3412;">
+                  📊 ລວມທັງໝົດ:<span id="purchaseSummaryCountText" style="display:none;">0</span>
+                </td>
+                <td class="win-only-col"></td>
+                <td style="text-align:center;font-weight:800;font-size:0.98rem;color:#9a3412;">
+                  ລວມ <span id="purchaseSummaryQtyText">0</span>
+                </td>
+                <td style="text-align:right;font-weight:800;font-size:1.15rem;color:#ea580c;font-variant-numeric:tabular-nums;">
+                  <span id="purchaseGrandTotalText">0 ກີບ</span>
+                </td>
+                <td class="win-only-col"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. PURCHASED ITEMS (ຊື້ແລ້ວ) -->
+      <div class="card" id="purchasedSectionCard" style="border:1.5px solid #a7f3d0;overflow:hidden;">
+        <div class="card-header" style="background:linear-gradient(135deg, #065f46 0%, #059669 100%);color:white;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.65rem;">
+          <div class="card-title" style="color:white;display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;">
+            <span>✅ ຊື້ແລ້ວ</span>
+            <span id="purchasedCountBadge" style="background:#ffffff;color:#047857;border:1.5px solid #a7f3d0;padding:0.2rem 0.75rem;border-radius:999px;font-size:0.84rem;font-weight:800;">0 ລາຍການ</span>
+          </div>
+          <button type="button" class="btn btn-sm" style="background:#ffffff;color:#dc2626;font-weight:700;border:none;box-shadow:0 1px 4px rgba(0,0,0,0.15);" onclick="clearAllPurchasedItems()" title="ລຶບລາຍການທີ່ຊື້ແລ້ວທັງໝົດ">
+            🗑️ ລ້າງລາຍການ
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="purchase-adapt-table">
+            <thead>
+              <tr style="background:#f0fdf4;">
+                <th class="win-only-col" style="width:80px;text-align:center;">ເລກລຳດັບ</th>
+                <th>ຊື່ລາຍການ</th>
+                <th class="win-only-col" style="text-align:right;">ລາຄາ (ກີບ)</th>
+                <th style="text-align:center;width:110px;">ຈຳນວນ</th>
+                <th style="text-align:right;">ລາຄາລວມ (ກີບ)</th>
+                <th class="win-only-col" style="text-align:center;width:180px;">ຈັດການ</th>
+              </tr>
+            </thead>
+            <tbody id="purchasedTableBody"></tbody>
+            <tfoot>
+              <tr class="purchased-summary-row" style="background:#ecfdf5;border-top:2px solid #34d399;">
+                <td class="win-only-col"></td>
+                <td style="text-align:right;font-weight:800;font-size:0.98rem;color:#065f46;">
+                  📊 ລວມທັງໝົດ:<span id="purchasedSummaryCountText" style="display:none;">0</span>
+                </td>
+                <td class="win-only-col"></td>
+                <td style="text-align:center;font-weight:800;font-size:0.98rem;color:#065f46;">
+                  ລວມ <span id="purchasedSummaryQtyText">0</span>
+                </td>
+                <td style="text-align:right;font-weight:800;font-size:1.15rem;color:#059669;font-variant-numeric:tabular-nums;">
+                  <span id="purchasedGrandTotalText">0 ກີບ</span>
+                </td>
+                <td class="win-only-col"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================================================= -->
+  <!-- MODAL 1: THERMAL RECEIPT PREVIEW & PRINT          -->
+  <!-- ================================================= -->
+  <div id="receiptModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width:440px;">
+      <div class="modal-header no-print" style="position:relative;display:flex;align-items:center;justify-content:center;">
+        <div class="card-title" style="text-align:center;width:100%;font-size:1.15rem;font-weight:800;color:var(--text-primary);letter-spacing:0.02em;">ໃບບິນຮັບເງິນ</div>
+        <button type="button" class="cart-remove" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);" onclick="closeReceiptModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="receiptContent" class="thermal-receipt" style="position:relative;"></div>
+      </div>
+      <div class="modal-footer no-print" style="display:flex;align-items:center;justify-content:space-between;gap:0.6rem;padding:0.75rem 1rem;">
+        <button type="button" class="btn btn-outline" style="width:44px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:1.25rem;border-color:#fdba74;background:#fff7ed;color:#c2410c;border-radius:8px;flex-shrink:0;" onclick="openReceiptSettingsModal()" title="ແກ້ໄຂຂໍ້ມູນໃບບິນ (ເບີໂທ, QR, ຂໍ້ຄວາມ)">
+          ⚙️
+        </button>
+        <button type="button" class="btn btn-primary" style="flex:1;height:42px;font-size:0.95rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;border-radius:8px;" onclick="window.print()">
+          🖨️ ສັ່ງພິມໃບບິນ
+        </button>
+        <button type="button" class="btn btn-outline" style="width:44px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:900;border-color:#fca5a5;background:#fef2f2;color:#dc2626;border-radius:8px;flex-shrink:0;" onclick="closeReceiptModal()" title="ປິດໜ້າຕ່າງ">
+          ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 2: ADD / EDIT PRODUCT OR SERVICE            -->
+  <!-- ================================================= -->
+  <div id="productModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="modal-header">
+        <div id="productModalTitle" class="card-title">ເພີ່ມສິນຄ້າ</div>
+        <button type="button" class="cart-remove" onclick="closeProductModal()">✕</button>
+      </div>
+      <form onsubmit="saveProductForm(event)">
+        <div class="modal-body">
+          <input type="hidden" id="prodIdInput" />
+
+          <div class="form-grid">
+            <div class="form-group" id="prodCodeFormGroup" style="display:none;">
+              <label>ລະຫັດ / ບາໂຄ້ດ</label>
+              <input type="text" id="prodCodeInput" class="input" onkeydown="if(event.key==='Enter'){event.preventDefault();}" oninput="handleProdCodeInputNormalize(this)" placeholder="ລະຫັດສິນຄ້າ" />
+            </div>
+            <div class="form-group full" id="prodCategoryFormGroup">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.25rem;">
+                <label style="margin:0;">ປະເພດ</label>
+                <button type="button" class="btn btn-outline btn-sm" style="padding:0.12rem 0.5rem;font-size:0.75rem;border-color:#fdba74;color:#ea580c;" onclick="openCategoryManagerModal()">
+                  ⚙️ ຈັດການ
+                </button>
+              </div>
+              <select id="prodCategoryInput" class="select" required></select>
+            </div>
+            <div class="form-group full">
+              <label>ຊື່ສິນຄ້າ</label>
+              <input type="text" id="prodNameInput" class="input" placeholder="ເຊັ່ນ: ຜັກກາດຂາວ, ໝາກເລັ່ນ..." required />
+            </div>
+            <div class="form-group">
+              <label>ຕົ້ນທຶນ</label>
+              <input type="number" id="prodCostInput" class="input" min="0" step="100" required oninput="autoCalculateSubPrices()" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>ລາຄາຂາຍ</label>
+              <input type="number" id="prodPriceInput" class="input" min="0" step="100" required oninput="autoCalculateSubPrices(); if(typeof updateTieredPriceBaseHelper==='function') updateTieredPriceBaseHelper();" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>ຫົວໜ່ວຍຫຼັກ</label>
+              <input type="text" id="prodUnitInput" class="input" placeholder="ເຊັ່ນ: ມັດ, ໂລ, ຖົງ" required oninput="updateSubUnitHelperText(); if(typeof updateTieredPriceBaseHelper==='function') updateTieredPriceBaseHelper();" />
+            </div>
+            <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:0.4rem;">
+              <label style="display:inline-flex;align-items:center;gap:0.5rem;cursor:pointer;margin:0;font-weight:600;">
+                <input type="checkbox" id="prodTrackStockInput" style="width:18px;height:18px;" />
+                <span>ຕັດສະຕັອກ</span>
+              </label>
+            </div>
+
+            <!-- Sub-Unit Configuration Section -->
+            <div class="form-group full" style="background:#f8fafc;padding:0.65rem 0.85rem;border-radius:8px;border:1px dashed #cbd5e1;margin-top:0.2rem;">
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:700;color:#1e293b;margin:0;">
+                <input type="checkbox" id="prodHasSubUnitInput" style="width:18px;height:18px;" onchange="toggleSubUnitFields()" />
+                <span>📦 ຫົວໜ່ວຍຍ່ອຍ</span>
+              </label>
+
+              <div id="subUnitFieldsContainer" style="display:none;margin-top:0.65rem;padding-top:0.65rem;border-top:1px solid #e2e8f0;">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>ຊື່ຫົວໜ່ວຍຍ່ອຍ</label>
+                    <input type="text" id="prodSubUnitInput" class="input" placeholder="ເຊັ່ນ: ຕັບ, ຣີມ, ຖົງ" oninput="updateSubUnitHelperText()" />
+                  </div>
+                  <div class="form-group">
+                    <label>ອັດຕາສ່ວນ (1 ຫົວໜ່ວຍຫຼັກ = ?)</label>
+                    <input type="number" id="prodSubRatioInput" class="input" min="2" step="1" placeholder="ເຊັ່ນ: 5" oninput="autoCalculateSubPrices()" />
+                  </div>
+                  <div class="form-group">
+                    <label>ລາຄາຂາຍຍ່ອຍ</label>
+                    <input type="number" id="prodSubPriceInput" class="input" min="0" step="100" placeholder="0" />
+                  </div>
+                  <div class="form-group">
+                    <label>ຕົ້ນທຶນຍ່ອຍ</label>
+                    <input type="number" id="prodSubCostInput" class="input" min="0" step="100" placeholder="0" />
+                  </div>
+                </div>
+                <div id="subUnitHelpText" style="font-size:0.8rem;color:#0284c7;font-weight:600;margin-top:0.35rem;background:#f0f9ff;padding:0.35rem 0.55rem;border-radius:6px;border:1px solid #bae6fd;"></div>
+              </div>
+            </div>
+
+            <!-- Tiered / Wholesale Pricing Section -->
+            <div class="form-group full" style="background:#f0fdf4;padding:0.65rem 0.85rem;border-radius:8px;border:1px dashed #86efac;margin-top:0.2rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+                <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:700;color:#166534;margin:0;">
+                  <input type="checkbox" id="prodHasTieredPriceInput" style="width:18px;height:18px;" onchange="toggleTieredPriceFields()" />
+                  <span>🏷️ ກຳນົດລາຄາຂາຍຕາມຈຳນວນ</span>
+                </label>
+                <button type="button" id="btnAddTierRow" class="btn btn-outline btn-sm" style="display:none;padding:0.15rem 0.55rem;font-size:0.76rem;border-color:#16a34a;color:#15803d;background:#ffffff;" onclick="addPriceTierRow()">
+                  ➕ ເພີ່ມຂັ້ນລາຄາ
+                </button>
+              </div>
+
+              <div id="tieredPriceFieldsContainer" style="display:none;margin-top:0.65rem;padding-top:0.65rem;border-top:1px solid #bbf7d0;">
+                <div style="font-size:0.78rem;color:#15803d;margin-bottom:0.5rem;">
+                  💡 ລາຄາປົກກະຕິ: <span id="normalPriceDisplay">0 ກີບ</span>. ຊື້ຮອດຈຳນວນທີ່ກຳນົດ ລະບົບຈະປັບລາຄາພິເສດໃຫ້ອັດຕະໂນມັດ:
+                </div>
+                <div id="priceTiersListContainer" style="display:flex;flex-direction:column;gap:0.45rem;"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>ຈຳນວນໃນສາງ</label>
+              <input type="number" id="prodStockInput" class="input" min="0" step="any" placeholder="0" />
+            </div>
+            <div class="form-group">
+              <label>ແຈ້ງເຕືອນໜ້ອຍກວ່າ</label>
+              <input type="number" id="prodMinStockInput" class="input" min="0" step="any" placeholder="5" />
+            </div>
+
+            <!-- Unpaid / Payable Supplier Debt Section -->
+            <div class="form-group full" style="background:#fef2f2;padding:0.65rem 0.85rem;border-radius:8px;border:1px solid #fecaca;margin-top:0.2rem;">
+              <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:700;color:#991b1b;margin:0;">
+                <input type="checkbox" id="prodIsUnpaidInput" style="width:18px;height:18px;" onchange="toggleProdUnpaidFields()" />
+                <span>⏳ ຕິດໜີ້</span>
+              </label>
+              <div id="prodUnpaidFieldsContainer" style="display:none;margin-top:0.55rem;padding-top:0.55rem;border-top:1px dashed #fca5a5;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;">
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.78rem;color:#7f1d1d;font-weight:700;">ຍອດເງິນຄ້າງຈ່າຍ (ກີບ):</label>
+                    <input type="number" id="prodUnpaidAmountInput" class="input" min="0" step="1000" placeholder="ຕົ້ນທຶນ x ຈຳນວນ" style="background:#ffffff;" />
+                  </div>
+                  <div class="form-group" style="margin-bottom:0;">
+                    <label style="font-size:0.78rem;color:#7f1d1d;font-weight:700;">ຜູ້ສະໜອງ:</label>
+                    <input type="text" id="prodSupplierInput" class="input" style="background:#ffffff;" placeholder="ເຊັ່ນ: ຮ້ານຂາຍສົ່ງ..." />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group full" style="margin-top:0.25rem;">
+              <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+                <div style="position:relative;display:inline-block;">
+                  <img
+                    id="prodModalImagePreview"
+                    src=""
+                    alt="Preview"
+                    style="width:58px;height:58px;object-fit:cover;border-radius:8px;border:1.5px solid #fdba74;background:#fff7ed;display:none;"
+                  />
+                  <button type="button" id="btnRemoveProdImg" onclick="clearModalProductImage()" style="display:none;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;border:none;cursor:pointer;font-size:10px;font-weight:bold;line-height:1;" title="ລົບຮູບ">✕</button>
+                </div>
+                <label class="btn btn-outline btn-sm" style="cursor:pointer;border-color:#f97316;color:#ea580c;padding:0.35rem 0.85rem;font-weight:600;display:inline-flex;align-items:center;gap:0.35rem;">
+                  📷 ໃສ່ຮູບ
+                  <input type="file" id="prodImageFileInput" accept="image/*" style="display:none;" onchange="handleModalProductImageChange(event)" />
+                </label>
+              </div>
+              <input type="hidden" id="prodImageDataInput" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeProductModal()">ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary">💾 ບັນທຶກ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: UNIT SELECTION FOR SUB-UNIT PRODUCTS       -->
+  <!-- ================================================= -->
+  <div id="unitSelectionModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:520px;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #0284c7 0%, #2563eb 100%);color:white;border-radius:12px 12px 0 0;">
+        <div class="card-title" style="color:white;display:flex;align-items:center;gap:0.5rem;font-size:1.15rem;">
+          <span>🛒 ເລືອກຫົວໜ່ວຍທີ່ຕ້ອງການຂາຍ</span>
+        </div>
+        <button type="button" class="cart-remove" style="color:white;" onclick="closeUnitSelectionModal()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem;">
+        <!-- Product Header Info -->
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1.5px solid #e2e8f0;">
+          <img id="unitModalProdImg" src="" alt="Product" style="width:68px;height:68px;object-fit:cover;border-radius:10px;border:2px solid #3b82f6;" />
+          <div>
+            <div id="unitModalProdCode" style="font-size:0.8rem;color:#64748b;font-weight:700;"></div>
+            <div id="unitModalProdName" style="font-size:1.05rem;font-weight:800;color:#0f172a;line-height:1.3;"></div>
+            <div id="unitModalProdRatio" style="font-size:0.84rem;color:#0284c7;font-weight:700;margin-top:0.2rem;"></div>
+          </div>
+        </div>
+
+        <div style="font-weight:700;font-size:0.92rem;color:#475569;margin-bottom:0.75rem;">
+          ກະລຸນາເລືອກຫົວໜ່ວຍທີ່ລູກຄ້າຊື້:
+        </div>
+
+        <!-- 2 Selection Cards -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;" id="unitSelectionOptionsGrid">
+          <!-- Main Unit Card -->
+          <div class="unit-choice-card" id="unitChoiceMain" onclick="selectUnitForSale('main')">
+            <div class="unit-choice-badge" style="background:#dbeafe;color:#1e40af;">ຫົວໜ່ວຍໃຫຍ່ (ຫຼັກ)</div>
+            <div class="unit-choice-name" id="unitChoiceMainName">ແກັດ</div>
+            <div class="unit-choice-price" id="unitChoiceMainPrice">0 ກີບ</div>
+            <div class="unit-choice-stock" id="unitChoiceMainStock">ເຫຼືອ 0 ແກັດ</div>
+            <button type="button" class="btn btn-primary" style="width:100%;margin-top:0.5rem;font-size:0.88rem;padding:0.45rem;">
+              + ຂາຍເປັນ <span id="unitBtnMainLabel">ແກັດ</span>
+            </button>
+          </div>
+
+          <!-- Sub Unit Card -->
+          <div class="unit-choice-card" id="unitChoiceSub" onclick="selectUnitForSale('sub')">
+            <div class="unit-choice-badge" style="background:#fef3c7;color:#92400e;">ຫົວໜ່ວຍຍ່ອຍ</div>
+            <div class="unit-choice-name" id="unitChoiceSubName">ຕັບ</div>
+            <div class="unit-choice-price" id="unitChoiceSubPrice">0 ກີບ</div>
+            <div class="unit-choice-stock" id="unitChoiceSubStock">(1 ແກັດ = 5 ຕັບ)</div>
+            <button type="button" class="btn" style="width:100%;margin-top:0.5rem;font-size:0.88rem;padding:0.45rem;background:#d97706;color:white;font-weight:800;border:none;">
+              + ຂາຍເປັນ <span id="unitBtnSubLabel">ຕັບ</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" style="width:100%;" onclick="closeUnitSelectionModal()">ຍົກເລີກ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: CATEGORY MANAGER                           -->
+  <!-- ================================================= -->
+  <div id="categoryManagerModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:540px;">
+      <div class="modal-header">
+        <div class="card-title">📁 ຈັດການໝວດໝູ່ສິນຄ້າ ແລະ ບໍລິການ</div>
+        <button type="button" class="cart-remove" onclick="closeCategoryManagerModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Quick Add Category Form -->
+        <form onsubmit="handleSaveCategory(event)" style="background:#f8fafc;padding:0.85rem;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:1rem;">
+          <input type="hidden" id="catEditIdInput" />
+          <div style="font-weight:700;font-size:0.88rem;color:#1e293b;margin-bottom:0.5rem;" id="catFormTitle">
+            + ເພີ່ມໝວດໝູ່ໃໝ່:
+          </div>
+          <div style="display:grid;grid-template-columns:70px 1fr auto;gap:0.5rem;align-items:center;">
+            <input type="text" id="catIconInput" class="input" placeholder="ໄອຄອນ" value="🏷️" title="ໄອຄອນ (ເຊັ່ນ: 📸, 📄, 🖨️)" required style="text-align:center;font-size:1.1rem;" />
+            <input type="text" id="catNameInput" class="input" placeholder="ຊື່ໝວດໝູ່ (ເຊັ່ນ: ອຸປະກອນໄອທີ, ປຶ້ມ...)" required />
+            <button type="submit" class="btn btn-primary btn-sm" id="catSubmitBtn" style="white-space:nowrap;">
+              + ບັນທຶກ
+            </button>
+          </div>
+          <button type="button" id="catCancelEditBtn" class="btn btn-outline btn-sm" style="display:none;margin-top:0.4rem;font-size:0.78rem;" onclick="resetCategoryForm()">
+            ຍົກເລີກການແກ້ໄຂ
+          </button>
+        </form>
+
+        <!-- Categories List Table -->
+        <div style="font-weight:700;font-size:0.88rem;color:#475569;margin-bottom:0.4rem;">
+          ລາຍການໝວດໝູ່ທັງໝົດ:
+        </div>
+        <div class="table-wrap" style="max-height:300px;overflow-y:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:60px;text-align:center;">ໄອຄອນ</th>
+                <th>ຊື່ໝວດໝູ່</th>
+                <th style="text-align:center;">ຈຳນວນສິນຄ້າ</th>
+                <th style="text-align:center;width:120px;">ຈັດການ</th>
+              </tr>
+            </thead>
+            <tbody id="categoryManagerTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeCategoryManagerModal()">ປິດໜ້າຕ່າງ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: MACHINE ACTION MENU (ແກ້ໄຂ / ລຶບ ອຸປະກອນ)   -->
+  <!-- ================================================= -->
+  <div id="machineActionMenuModal" class="modal-backdrop no-print" onclick="if(event.target === this) closeMachineActionMenu()">
+    <div class="modal-box" style="max-width:340px;border-radius:16px;overflow:hidden;border:2px solid #f97316;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #c2410c 0%, #ea580c 55%, #f97316 100%);color:#ffffff;padding:0.85rem 1.1rem;">
+        <div style="display:flex;align-items:center;gap:0.65rem;min-width:0;flex:1;">
+          <img id="machActionMenuImg" src="" alt="" onclick="triggerQuickMachineImageUpload(event, selectedActionMachineId)" title="ກົດເພື່ອໃສ່ຮູບ / ປ່ຽນຮູບອຸປະກອນ" style="width:42px;height:42px;border-radius:8px;object-fit:cover;border:1.5px solid #ffffff;background:#fff7ed;flex-shrink:0;cursor:pointer;" />
+          <div style="min-width:0;flex:1;">
+            <div id="machActionMenuName" style="font-weight:800;font-size:0.95rem;color:#ffffff;line-height:1.3;word-break:break-word;">ຊື່ອຸປະກອນ</div>
+            <div id="machActionMenuSub" style="font-size:0.78rem;color:#ffedd5;font-weight:600;margin-top:2px;">0 ກີບ</div>
+          </div>
+        </div>
+        <button type="button" class="cart-remove" style="color:#ffffff;background:rgba(255,255,255,0.2);border:none;" onclick="closeMachineActionMenu()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1rem;display:flex;flex-direction:column;gap:0.65rem;">
+        <button type="button" class="btn btn-outline" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;border-color:#f97316;color:#c2410c;background:#fff7ed;" onclick="triggerQuickMachineImageUpload(event, selectedActionMachineId)">
+          📷 ໃສ່ຮູບ / ປ່ຽນຮູບອຸປະກອນ
+        </button>
+        <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.7rem 1rem;font-size:0.98rem;font-weight:800;background:linear-gradient(135deg, #ea580c, #f97316);border:none;color:#ffffff;" onclick="handleMachineActionEdit()">
+          ✏️ ແກ້ໄຂ
+        </button>
+        <button type="button" class="btn btn-danger" style="width:100%;justify-content:center;padding:0.7rem 1rem;font-size:0.98rem;font-weight:800;" onclick="handleMachineActionDelete()">
+          🗑️ ລຶບ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: BILL ACTION MENU (ພິມບິນ / ແກ້ໄຂ / ລຶບ / ຮັບຊຳລະໜີ້) -->
+  <!-- ================================================= -->
+  <div id="billActionMenuModal" class="modal-backdrop no-print" onclick="if(event.target === this) closeBillActionMenu()">
+    <div class="modal-box" style="max-width:360px;border-radius:16px;overflow:hidden;border:2px solid #9333ea;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #581c87 0%, #7e22ce 55%, #9333ea 100%);color:#ffffff;padding:0.85rem 1.1rem;">
+        <div style="min-width:0;flex:1;">
+          <div id="billActionMenuTitle" style="font-weight:800;font-size:0.95rem;color:#ffffff;line-height:1.3;word-break:break-word;">ໃບບິນ</div>
+          <div id="billActionMenuSub" style="font-size:0.78rem;color:#f3e8ff;font-weight:600;margin-top:2px;">0 ກີບ</div>
+        </div>
+        <button type="button" class="cart-remove" style="color:#ffffff;background:rgba(255,255,255,0.2);border:none;" onclick="closeBillActionMenu()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1rem;display:flex;flex-direction:column;gap:0.6rem;">
+        <div id="billActionMenuMeta" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:10px;padding:0.6rem 0.75rem;font-size:0.82rem;color:#334155;line-height:1.5;display:none;"></div>
+        <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.96rem;font-weight:800;background:linear-gradient(135deg, #2563eb, #1d4ed8);border:none;color:#ffffff;" onclick="handleBillActionPrint()">
+          🖨️ ພິມບິນ
+        </button>
+        <button type="button" class="btn btn-outline" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.96rem;font-weight:800;border-color:#9333ea;color:#7e22ce;background:#faf5ff;" onclick="handleBillActionEdit()">
+          ✏️ ແກ້ໄຂ
+        </button>
+        <button type="button" id="billActionPayDebtBtn" class="btn btn-success" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.96rem;font-weight:800;" onclick="handleBillActionPayDebt()">
+          💵 ຮັບຊຳລະໜີ້
+        </button>
+        <button type="button" class="btn btn-danger" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.96rem;font-weight:800;" onclick="handleBillActionDelete()">
+          🗑️ ລຶບ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: PRODUCT / SERVICE ACTION MENU (ສຳລັບມືຖື/Android) -->
+  <!-- ================================================= -->
+  <div id="productActionMenuModal" class="modal-backdrop no-print" onclick="if(event.target === this) closeProductActionMenu()">
+    <div class="modal-box" style="max-width:350px;border-radius:16px;overflow:hidden;border:2px solid #ea580c;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #c2410c 0%, #ea580c 55%, #f97316 100%);color:#ffffff;padding:0.85rem 1.1rem;">
+        <div style="display:flex;align-items:center;gap:0.65rem;min-width:0;flex:1;">
+          <img id="prodActionMenuImg" src="" alt="" onclick="triggerQuickImageUpload(event, selectedActionProductId)" title="ກົດເພື່ອໃສ່ຮູບ / ປ່ຽນຮູບສິນຄ້າ" style="width:42px;height:42px;border-radius:8px;object-fit:cover;border:1.5px solid #ffffff;background:#fff7ed;flex-shrink:0;cursor:pointer;" />
+          <div style="min-width:0;flex:1;">
+            <div id="prodActionMenuName" style="font-weight:800;font-size:0.95rem;color:#ffffff;line-height:1.3;word-break:break-word;">ຊື່ສິນຄ້າ</div>
+            <div id="prodActionMenuSub" style="font-size:0.78rem;color:#ffedd5;font-weight:600;margin-top:2px;">0 ກີບ</div>
+          </div>
+        </div>
+        <button type="button" class="cart-remove" style="color:#ffffff;background:rgba(255,255,255,0.2);border:none;" onclick="closeProductActionMenu()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1rem;display:flex;flex-direction:column;gap:0.6rem;">
+        <div id="prodActionMenuMeta" style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:0.55rem 0.75rem;font-size:0.82rem;color:#475569;line-height:1.5;"></div>
+        <button type="button" class="btn btn-outline" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;border-color:#ea580c;color:#c2410c;background:#fff7ed;" onclick="triggerQuickImageUpload(event, selectedActionProductId)">
+          📷 ໃສ່ຮູບ / ປ່ຽນຮູບສິນຄ້າ
+        </button>
+        <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;background:linear-gradient(135deg, #ea580c, #f97316);border:none;color:#ffffff;" onclick="handleProductActionEdit()">
+          ✏️ ແກ້ໄຂ
+        </button>
+        <button type="button" id="prodActionBarcodeBtn" class="btn btn-outline" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;border-color:#6366f1;color:#4338ca;background:#eef2ff;" onclick="handleProductActionBarcode()">
+          🏷️ ບາໂຄ້ດ
+        </button>
+        <button type="button" id="prodActionReorderBtn" class="btn btn-outline" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;border-color:#f97316;color:#c2410c;background:#fff7ed;" onclick="handleProductActionReorder()">
+          📦 ສັ່ງເພີ່ມເຂົ້າແຜນຊື້
+        </button>
+        <button type="button" class="btn btn-danger" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;" onclick="handleProductActionDelete()">
+          🗑️ ລຶບ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: PURCHASE PLAN ACTION MENU (ສຳລັບມືຖື/Android) -->
+  <!-- ================================================= -->
+  <div id="purchaseActionMenuModal" class="modal-backdrop no-print" onclick="if(event.target === this) closePurchaseActionMenu()">
+    <div class="modal-box" style="max-width:340px;border-radius:16px;overflow:hidden;border:2px solid #059669;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #065f46 0%, #059669 100%);color:#ffffff;padding:0.85rem 1.1rem;">
+        <div style="min-width:0;flex:1;">
+          <div id="purchActionMenuName" style="font-weight:800;font-size:0.95rem;color:#ffffff;line-height:1.3;word-break:break-word;">ລາຍການສັ່ງຊື້</div>
+          <div id="purchActionMenuSub" style="font-size:0.78rem;color:#d1fae5;font-weight:600;margin-top:2px;">0 ກີບ</div>
+        </div>
+        <button type="button" class="cart-remove" style="color:#ffffff;background:rgba(255,255,255,0.2);border:none;" onclick="closePurchaseActionMenu()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1rem;display:flex;flex-direction:column;gap:0.6rem;">
+        <button type="button" id="purchActionMarkBtn" class="btn btn-success" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;" onclick="handlePurchaseActionToggleStatus()">
+          ✅ ຊື້ແລ້ວ
+        </button>
+        <button type="button" id="purchActionEditBtn" class="btn btn-outline" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;border-color:#059669;color:#065f46;background:#ecfdf5;" onclick="handlePurchaseActionEdit()">
+          ✏️ ແກ້ໄຂ
+        </button>
+        <button type="button" class="btn btn-danger" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;" onclick="handlePurchaseActionDelete()">
+          🗑️ ລຶບ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: EXPENSE ACTION MENU (ສຳລັບມືຖື/Android)       -->
+  <!-- ================================================= -->
+  <div id="expenseActionMenuModal" class="modal-backdrop no-print" onclick="if(event.target === this) closeExpenseActionMenu()">
+    <div class="modal-box" style="max-width:340px;border-radius:16px;overflow:hidden;border:2px solid #dc2626;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #991b1b 0%, #dc2626 100%);color:#ffffff;padding:0.85rem 1.1rem;">
+        <div style="min-width:0;flex:1;">
+          <div id="expActionMenuTitle" style="font-weight:800;font-size:0.95rem;color:#ffffff;line-height:1.3;word-break:break-word;">ລາຍຈ່າຍ</div>
+          <div id="expActionMenuSub" style="font-size:0.78rem;color:#fee2e2;font-weight:600;margin-top:2px;">0 ກີບ</div>
+        </div>
+        <button type="button" class="cart-remove" style="color:#ffffff;background:rgba(255,255,255,0.2);border:none;" onclick="closeExpenseActionMenu()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1rem;display:flex;flex-direction:column;gap:0.6rem;">
+        <button type="button" class="btn btn-primary" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;background:#dc2626;border:none;color:#ffffff;" onclick="handleExpenseActionEdit()">
+          ✏️ ແກ້ໄຂ
+        </button>
+        <button type="button" class="btn btn-danger" style="width:100%;justify-content:center;padding:0.65rem 1rem;font-size:0.95rem;font-weight:800;" onclick="handleExpenseActionDelete()">
+          🗑️ ລຶບ
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 3: ADD / EDIT MACHINE / SHOP EQUIPMENT      -->
+  <!-- ================================================= -->
+  <div id="machineModal" class="modal-backdrop no-print">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div id="machineModalTitle" class="card-title">ເພີ່ມຊັບສິນ</div>
+        <button type="button" class="cart-remove" onclick="closeMachineModal()">✕</button>
+      </div>
+      <form onsubmit="saveMachineForm(event)">
+        <div class="modal-body">
+          <input type="hidden" id="machIdInput" />
+
+          <!-- Smart Voice Assistant Bar for Machines -->
+          <div class="voice-assistant-bar" id="smartVoiceMachBar">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <span style="font-size:1.35rem;">🎙️</span>
+              <div>
+                <div style="font-weight:800;font-size:0.86rem;color:#1e40af;">ປ້ອນຂໍ້ມູນອຸປະກອນດ້ວຍສຽງ (Smart Voice)</div>
+                <div style="font-size:0.75rem;color:#3b82f6;">ກົດປຸ່ມແລ້ວເວົ້າ ເຊັ່ນ: "ຕູ້ແຊ່ເຢັນ 2 ປະຕູ ລາຄາ 12500000 ຕັ້ງຢູ່ຊ້າຍມື"</div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btnSmartVoiceMachine" onclick="startSmartVoiceMachineInput()" style="background:#2563eb;border-color:#1d4ed8;font-weight:700;display:inline-flex;align-items:center;gap:0.35rem;border-radius:8px;padding:0.35rem 0.75rem;">
+              <span id="smartVoiceMachIcon">🎙️</span> <span id="smartVoiceMachText">ກົດເພື່ອເວົ້າ</span>
+            </button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>ຊື່ອຸປະກອນ / ເຄື່ອງຈັກ</label>
+              <div class="voice-input-row">
+                <input type="text" id="machNameInput" class="input" style="flex:1;" placeholder="ເຊັ່ນ: ຕູ້ແຊ່ເຢັນ 2 ປະຕູ, ເຄື່ອງຊັ່ງດີຈິຕອນ..." required />
+                <button type="button" class="voice-btn" id="voiceBtn_machNameInput" onclick="startVoiceInput('machNameInput', 'text')" title="ກົດເພື່ອເວົ້າຊື່ອຸປະກອນ">🎙️</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>ຈຳນວນ & ຫົວໜ່ວຍ</label>
+              <div style="display:flex;gap:0.4rem;align-items:center;">
+                <input type="number" id="machQtyInput" class="input" min="1" step="1" value="1" placeholder="1" required oninput="calcMachModalTotal()" style="flex:1;" />
+                <input type="text" id="machUnitInput" class="input" placeholder="ຫົວໜ່ວຍ" value="ເຄື່ອງ" style="width:110px;" oninput="calcMachModalTotal()" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>ລາຄາຕໍ່ໜ່ວຍ (ກີບ)</label>
+              <div class="voice-input-row">
+                <input type="number" id="machPriceInput" class="input" style="flex:1;" min="0" step="1000" placeholder="ເຊັ່ນ: 12500000" required oninput="calcMachModalTotal()" />
+                <button type="button" class="voice-btn" id="voiceBtn_machPriceInput" onclick="startVoiceInput('machPriceInput', 'number')" title="ກົດເພື່ອເວົ້າລາຄາອຸປະກອນ">🎙️</button>
+              </div>
+            </div>
+            <div class="form-group full" id="machTotalPreviewGroup" style="background:#fff7ed;padding:0.6rem 0.85rem;border-radius:8px;border:1px dashed #fdba74;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.85rem;font-weight:700;color:#9a3412;">📊 ລວມມູນຄ່າອຸປະກອນ:</span>
+              <span id="machModalTotalDisplay" style="font-size:1.05rem;font-weight:900;color:#ea580c;font-variant-numeric:tabular-nums;">0 ກີບ</span>
+            </div>
+            <div class="form-group full">
+              <label>ສະຖານະການໃຊ້ງານ</label>
+              <select id="machStatusInput" class="select">
+                <option value="normal">🟢 ປົກກະຕິ (ພ້ອມໃຊ້ງານ)</option>
+                <option value="maintenance">🟡 ຕ້ອງບຳລຸງຮັກສາ / ເຕີມໝຶກ</option>
+                <option value="broken">🔴 ຊຳລຸດ</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>📷 ຮູບພາບອຸປະກອນ</label>
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <img id="machImgPreview" src="" alt="Preview" style="width:54px;height:54px;object-fit:cover;border-radius:8px;border:1.5px solid #fed7aa;display:none;" />
+                <label class="btn btn-outline btn-sm" style="cursor:pointer;border-color:#f97316;color:#ea580c;">
+                  📷 ເລືອກຮູບຈາກເຄື່ອງ
+                  <input type="file" id="machModalImgFile" accept="image/*" style="display:none;" onchange="handleMachineModalImgUpload(event)" />
+                </label>
+                <button type="button" class="btn btn-outline btn-sm" onclick="clearMachineModalImg()">🔄 ໃຊ້ຮູບເລີ່ມຕົ້ນ</button>
+              </div>
+              <input type="hidden" id="machImgDataInput" />
+            </div>
+            <div class="form-group full">
+              <label>ບັນທຶກການກວດເຊັກ / ໝາຍເຫດ</label>
+              <div class="voice-input-row">
+                <input type="text" id="machNoteInput" class="input" style="flex:1;" placeholder="ເຊັ່ນ: ຕັ້ງຢູ່ຕິດຝາເບື້ອງຊ້າຍ, ໃຊ້ງານປົກກະຕິ" />
+                <button type="button" class="voice-btn" id="voiceBtn_machNoteInput" onclick="startVoiceInput('machNoteInput', 'text')" title="ກົດເພື່ອເວົ້າໝາຍເຫດ">🎙️</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeMachineModal()">ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary">💾 ບັນທຶກອຸປະກອນ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 4: ADD / EDIT SHOP EXPENSE                  -->
+  <!-- ================================================= -->
+  <div id="expenseModal" class="modal-backdrop no-print">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div id="expenseModalTitle" class="card-title">💸 ເພີ່ມລາຍຈ່າຍ</div>
+        <button class="cart-remove" onclick="closeExpenseModal()">✕</button>
+      </div>
+      <form onsubmit="saveExpenseForm(event)">
+        <div class="modal-body">
+          <input type="hidden" id="expIdInput" />
+          <div class="form-grid">
+            <div class="form-group">
+              <label>ວັນທີຈ່າຍ</label>
+              <input type="date" id="expDateInput" class="input" required />
+            </div>
+            <div class="form-group">
+              <label>ໝວດລາຍຈ່າຍ</label>
+              <select id="expCategoryInput" class="select">
+                <option value="salary">👨‍💼 ເງິນເດືອນພະນັກງານ</option>
+                <optgroup label="⚡💧 ຄ່ານ້ຳ-ໄຟ-ເນັດ-ຂີ້ເຫຍື້ອ">
+                  <option value="electricity">⚡ ຄ່າໄຟຟ້າ</option>
+                  <option value="water">💧 ຄ່ານ້ຳປະປາ</option>
+                  <option value="internet">🌐 ຄ່າອິນເຕີເນັດ</option>
+                  <option value="garbage">🗑️ ຄ່າຂີ້ເຫຍື້ອ</option>
+                </optgroup>
+                <option value="maintenance">🛠️ ຄ່າສ້ອມແປງ / ບຳລຸງຮັກສາ</option>
+                <option value="stock_purchase">🛒 ຊື້ສິນຄ້າເຂົ້າຮ້ານ</option>
+                <option value="other">📦 ລາຍຈ່າຍອື່ນໆ</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>ລາຍລະອຽດລາຍຈ່າຍ</label>
+              <input type="text" id="expTitleInput" class="input" placeholder="ເຊັ່ນ: ຈ່າຍເງິນເດືອນພະນັກງານປະຈຳເດືອນ 11, ຄ່າໄຟຟ້າຮ້ານ..." required />
+            </div>
+            <div class="form-group">
+              <label>ຈຳນວນເງິນ (ກີບ)</label>
+              <input type="number" id="expAmountInput" class="input" min="0" step="1000" required />
+            </div>
+            <div class="form-group">
+              <label>ຜູ້ຮັບເງິນ / ໝາຍເຫດ</label>
+              <input type="text" id="expNoteInput" class="input" placeholder="ເຊັ່ນ: ນາງ ມະນີ / ຈ່າຍຜ່ານ BCEL One" />
+            </div>
+
+            <!-- Unpaid / Debt Checkbox for Expense -->
+            <div class="form-group full" style="background:#fef2f2;padding:0.75rem 1rem;border-radius:10px;border:1.5px solid #fecaca;margin-top:0.25rem;">
+              <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-weight:700;color:#991b1b;margin-bottom:0;">
+                <input type="checkbox" id="expIsUnpaidInput" style="width:18px;height:18px;" onchange="toggleExpUnpaidFields()" />
+                <span>⏳ ຄ້າງຈ່າຍ / ຕິດໜີ້ (ຍັງບໍ່ທັນໄດ້ຈ່າຍເງິນ)</span>
+              </label>
+              <div id="expUnpaidFieldsContainer" style="display:none;margin-top:0.65rem;padding-top:0.65rem;border-top:1px dashed #fca5a5;">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:0.8rem;color:#7f1d1d;font-weight:700;">ເຈົ້າໜີ້ / ຜູ້ທີ່ຕິດໜີ້ (ຖ້າມີ):</label>
+                  <input type="text" id="expCreditorInput" class="input" placeholder="ເຊັ່ນ: ຮ້ານຂາຍເຄື່ອງ, ຊື່ບຸກຄົນ, ບໍລິສັດ..." style="background:#ffffff;" />
+                </div>
+                <div style="font-size:0.78rem;color:#991b1b;margin-top:0.4rem;font-weight:600;">
+                  💡 ເມື່ອຕິກເລືອກ "ຄ້າງຈ່າຍ/ຕິດໜີ້", ລາຍການນີ້ຈະໄປສະແດງຢູ່ໃນ "ໜີ້ຕ້ອງສົ່ງ / ຄ້າງຈ່າຍ" ໃນໜ້າສະຫຼຸບ ແລະ ຍັງບໍ່ທັນຕັດເງິນສົດໃນຮ້ານ.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeExpenseModal()">ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary">💾 ບັນທຶກລາຍຈ່າຍ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 4.5: ADD / RECORD SHOP INCOME               -->
+  <!-- ================================================= -->
+  <div id="incomeModal" class="modal-backdrop no-print">
+    <div class="modal-box">
+      <div class="modal-header" style="background:linear-gradient(135deg, #065f46 0%, #059669 100%);color:white;border-radius:12px 12px 0 0;">
+        <div id="incomeModalTitle" class="card-title" style="color:white;display:flex;align-items:center;gap:0.5rem;">
+          <span>💰 ບັນທຶກລາຍຮັບພາຍໃນຮ້ານ</span>
+        </div>
+        <button class="cart-remove" style="color:white;" onclick="closeIncomeModal()">✕</button>
+      </div>
+      <form onsubmit="saveIncomeForm(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>ວັນທີຮັບເງິນ</label>
+              <input type="date" id="incDateInput" class="input" required />
+            </div>
+            <div class="form-group">
+              <label>ໝວດລາຍຮັບ</label>
+              <select id="incCategoryInput" class="select">
+                <option value="other">📦 ລາຍຮັບອື່ນໆ (ນອກເໜືອສິນຄ້າ/ບໍລິການ)</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>ລາຍລະອຽດລາຍຮັບ / ສິນຄ້າ / ບໍລິການ</label>
+              <input type="text" id="incTitleInput" class="input" placeholder="ເຊັ່ນ: ຄ່າບໍລິການຖ່າຍຮູບຕິດບັດ, ພິມເອກະສານດ່ວນ, ຂາຍເຈ້ຍ..." required />
+            </div>
+            <div class="form-group">
+              <label>ຊື່ລູກຄ້າ / ຫ້ອງການ</label>
+              <input type="text" id="incCustomerInput" class="input" placeholder="ເຊັ່ນ: ລູກຄ້າທົ່ວໄປ, ຫ້ອງການປົກຄອງ..." value="ລູກຄ້າທົ່ວໄປ" />
+            </div>
+            <div class="form-group">
+              <label>ຊ່ອງທາງຮັບເງິນ</label>
+              <select id="incPaymentInput" class="select">
+                <option value="cash">💵 ເງິນສົດ</option>
+                <option value="bcel">📲 BCEL One QR</option>
+                <option value="credit">📝 ຕິດໜີ້ (ຄ້າງຊຳລະ)</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label>ຈຳນວນເງິນລາຍຮັບ (ກີບ)</label>
+              <input type="number" id="incAmountInput" class="input" min="0" step="1000" placeholder="0" required />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+          <button type="button" class="btn btn-outline" style="border-color:#10b981;color:#059669;font-weight:700;" onclick="goToPosTabFromModal()">
+            🛒 ໄປທີ່ໜ້າອອກບິນ (POS)
+          </button>
+          <div style="display:flex;gap:0.5rem;">
+            <button type="button" class="btn btn-outline" onclick="closeIncomeModal()">ຍົກເລີກ</button>
+            <button type="submit" class="btn" style="background:#059669;color:white;font-weight:700;">💾 ບັນທຶກລາຍຮັບ</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: POPUP ໃສ່ຊື່ລູກຄ້າ ແລະ ເບີໂທ ເມື່ອກົດພິມບິນ      -->
+  <!-- ================================================= -->
+  <div id="printCustomerPopupModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:420px;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);color:#fff;">
+        <div class="card-title" style="color:#fff;display:flex;align-items:center;gap:0.5rem;font-size:1.05rem;">
+          🖨️ ຂໍ້ມູນລູກຄ້າສຳລັບໃບບິນ
+        </div>
+        <button type="button" class="cart-remove" style="color:#fff;" onclick="closeCustomerPopupModal()">✕</button>
+      </div>
+      <form id="printCustomerPopupForm" onsubmit="confirmCustomerPopupAndCheckout(event)">
+        <div class="modal-body" style="display:flex;flex-direction:column;gap:0.85rem;padding:1.15rem 1.25rem;">
+          <div class="form-group" style="margin:0;">
+            <label style="font-weight:800;color:#1e293b;margin-bottom:0.35rem;display:block;">👤 ຊື່ລູກຄ້າ / ຫ້ອງການ (ຖ້າມີ)</label>
+            <input
+              type="text"
+              id="popupCustomerNameInput"
+              class="input"
+              placeholder="ເຊັ່ນ: ລູກຄ້າທົ່ວໄປ, ຊື່ລູກຄ້າ ຫຼື ຫ້ອງການ..."
+              style="font-size:0.95rem;padding:0.6rem 0.75rem;"
+            />
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label style="font-weight:800;color:#1e293b;margin-bottom:0.35rem;display:block;">📞 ເບີໂທ / WhatsApp (ຖ້າມີ)</label>
+            <input
+              type="text"
+              id="popupCustomerPhoneInput"
+              class="input"
+              placeholder="ປ້ອນເບີໂທລູກຄ້າ..."
+              style="font-size:0.95rem;padding:0.6rem 0.75rem;"
+            />
+          </div>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:0.55rem;padding:0.85rem 1.25rem;background:#f8fafc;border-top:1px solid #e2e8f0;">
+          <button type="button" class="btn btn-outline" onclick="closeCustomerPopupModal()">ຍົກເລີກ</button>
+          <button type="submit" id="popupCustomerConfirmBtn" class="btn btn-primary" style="background:linear-gradient(135deg,#1d4ed8,#2563eb);font-weight:800;padding:0.55rem 1.15rem;">
+            🖨️ ພິມບິນ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 5: GOOGLE SHEETS CLOUD SYNC SETUP           -->
+  <!-- ================================================= -->
+  <!-- MODAL 5: GOOGLE DRIVE & GOOGLE SHEET CLOUD SYNC   -->
+  <!-- ================================================= -->
+  <input
+    type="file"
+    id="driveBackupFileInput"
+    accept=".json,application/json"
+    style="display:none;"
+    onchange="handleDriveBackupUpload(event)"
+  />
+
+  <!-- ================================================= -->
+  <!-- MODAL: SYSTEM SETTINGS (ຕັ້ງຄ່າລະບົບ & CLOUD)         -->
+  <!-- ================================================= -->
+  <div id="gsheetModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:620px;">
+      <div class="modal-header" style="background:linear-gradient(135deg, #1e293b 0%, #334155 100%);color:#fff;">
+        <div class="card-title" style="color:#fff;display:flex;align-items:center;gap:0.5rem;font-size:1.15rem;">
+          ⚙️ ຕັ້ງຄ່າລະບົບ
+        </div>
+        <button class="cart-remove" style="color:#fff;" onclick="closeGSheetModal()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:0.9rem;">
+        <!-- User Account & Actions -->
+        <div class="user-auth-panel" id="userAuthBar" style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.6rem;">
+          <div style="display:flex;align-items:center;gap:0.65rem;">
+            <div id="headerUserAvatarWrap" style="width:42px;height:42px;border-radius:50%;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:1.25rem;border:1.5px solid #bae6fd;overflow:hidden;flex-shrink:0;">
+              👤
+            </div>
+            <div>
+              <div style="display:flex;align-items:center;gap:0.4rem;">
+                <strong style="font-size:0.98rem;color:#0f172a;" id="headerUsername">ເຈົ້າຂອງຮ້ານ</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+            <!-- ປຸ່ມຈັດການສະມາຊິກ (ສະເພາະເຈົ້າຂອງຮ້ານ) -->
+            <button type="button" class="btn btn-sm btn-outline" id="manageUsersBtn" onclick="openUserManagementModal()" style="border-color:#3b82f6;color:#1d4ed8;background:#eff6ff;font-weight:700;padding:0.35rem 0.75rem;border-radius:999px;display:inline-flex;align-items:center;gap:0.3rem;">
+              👥 ຈັດການສະມາຊິກ
+            </button>
+
+            <!-- ປຸ່ມອອກລະບົບ -->
+            <button type="button" class="header-logout-btn" onclick="closeGSheetModal(); logoutUser();" title="ອອກຈາກລະບົບ">
+              🚪 ອອກລະບົບ
+            </button>
+          </div>
+        </div>
+
+        <!-- Settings: Cloud Sync & Backup Section -->
+        <div id="settingsCloudSection" style="display:flex;flex-direction:column;gap:0.8rem;">
+          <!-- Google Apps Script URL Input -->
+          <div style="background:#ffffff;border:1.5px solid #e2e8f0;border-radius:12px;padding:0.85rem;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;flex-wrap:wrap;gap:0.3rem;">
+              <label style="font-weight:800;color:#1e293b;font-size:0.86rem;display:flex;align-items:center;gap:0.35rem;">
+                🔗 ລິ້ງ Google Apps Script Web App URL:
+              </label>
+              <small id="gsheetSyncStatusText" style="color:var(--text-muted);font-size:0.75rem;font-weight:700;">
+                ສະຖານະ: ຍັງບໍ່ໄດ້ຕັ້ງຄ່າ
+              </small>
+            </div>
+            <div style="display:flex;gap:0.45rem;">
+              <input
+                type="url"
+                id="gsheetUrlInput"
+                class="input"
+                style="border-color:#38bdf8;font-size:0.85rem;flex:1;"
+                placeholder="https://script.google.com/macros/s/.../exec"
+              />
+              <button type="button" class="btn btn-primary btn-sm" style="background:#0284c7;border-color:#0284c7;white-space:nowrap;padding:0 0.85rem;font-weight:700;" onclick="saveGSheetUrlAndSync()">
+                💾 ບັນທຶກລິ້ງ
+              </button>
+            </div>
+          </div>
+
+          <!-- Orderly Grid of Action Buttons (No verbose explanation, pure neat buttons) -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));gap:0.6rem;">
+            <button type="button" class="btn btn-primary" style="background:#0284c7;border-color:#0284c7;padding:0.65rem 0.5rem;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:0.4rem;" onclick="syncToGSheetBackground(true)">
+              ☁️ ສຳຮອງຂຶ້ນ Google Drive
+            </button>
+            <button type="button" class="btn btn-outline" style="border-color:#0284c7;color:#0284c7;background:#f0f9ff;padding:0.65rem 0.5rem;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:0.4rem;" onclick="pullFromGSheet()">
+              ⬇️ ດຶງຂໍ້ມູນຫຼັກຈາກ Google Drive
+            </button>
+            <button type="button" id="openGDriveFolderBtn" class="btn btn-outline" style="border-color:#10b981;color:#047857;background:#ecfdf5;padding:0.65rem 0.5rem;font-size:0.85rem;font-weight:700;display:none;align-items:center;justify-content:center;gap:0.4rem;" onclick="openMyGoogleDrive()">
+              📁 ເປີດ Google Drive
+            </button>
+            <button type="button" class="btn btn-outline" style="border-color:#64748b;color:#334155;background:#ffffff;padding:0.65rem 0.5rem;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:0.4rem;" onclick="exportDriveBackupFile()">
+              📥 ດາວໂຫຼດ .json
+            </button>
+            <button type="button" class="btn btn-outline" style="border-color:#64748b;color:#334155;background:#ffffff;padding:0.65rem 0.5rem;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:0.4rem;" onclick="triggerImportDriveBackup()">
+              📤 ກູ້ຄືນ .json
+            </button>
+            <button type="button" class="btn btn-outline" style="border-color:#8b5cf6;color:#6d28d9;background:#f5f3ff;padding:0.65rem 0.5rem;font-size:0.85rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:0.4rem;" onclick="toggleQrSyncBox()">
+              📱 QR Code ເຊື່ອມຕໍ່ມືຖື
+            </button>
+          </div>
+
+          <div style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:10px;padding:0.6rem 0.8rem;font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:0.5rem;">
+            <span>🛡️</span>
+            <span>Google Drive ເປັນແຫຼ່ງຂໍ້ມູນຫຼັກ (Master Data): ທຸກຄັ້ງທີ່ອັບເດດລະບົບ ຂໍ້ມູນທັງໝົດຈະຖືກຮັກສາໄວ້ 100% ໂດຍດຶງຈາກ Google Drive.</span>
+          </div>
+
+          <!-- Cross-Device Sync & Mobile QR Code (Toggled/Collapsible) -->
+          <div id="mobileSyncBox" style="display:none;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;padding:0.9rem;">
+            <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;justify-content:center;">
+              <div style="text-align:center;">
+                <img id="syncQrCodeImg" src="" alt="QR Code" style="width:130px;height:130px;border-radius:8px;border:1px solid #cbd5e1;display:block;" />
+                <small style="color:#64748b;font-size:0.72rem;margin-top:0.3rem;display:block;">📷 ສະແກນດ້ວຍມືຖື</small>
+              </div>
+              <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:0.45rem;">
+                <label style="font-size:0.78rem;font-weight:700;color:#475569;">🔗 ລິ້ງສຳລັບເປີດໃນເຄື່ອງອື່ນ:</label>
+                <input type="text" id="mobileSyncLinkInput" readonly class="input" style="font-size:0.8rem;background:#ffffff;" onclick="this.select()" />
+                <button type="button" class="btn btn-sm btn-primary" style="background:#2563eb;border-color:#1d4ed8;font-weight:700;" onclick="copyMobileSyncLink()">
+                  📋 ກ໊ອບປີ້ລິ້ງສົ່ງຕໍ່
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:0.75rem 1.25rem;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeGSheetModal()">ປິດໜ້າຕ່າງ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: MEMBER / USER MANAGEMENT & PERMISSIONS      -->
+  <!-- ================================================= -->
+  <div id="userManagementModal" class="modal-backdrop no-print" style="display:none;z-index:9999;">
+    <div class="modal-box" style="max-width:680px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 20px 45px rgba(0,0,0,0.35);">
+      <div class="modal-header" style="background:linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);color:#fff;">
+        <div class="card-title" style="color:#fff;display:flex;align-items:center;gap:0.5rem;font-size:1.15rem;">
+          👥 ຈັດການສະມາຊິກ ແລະ ກຳນົດສິດທິການໃຊ້ງານ
+        </div>
+        <button class="cart-remove" style="color:#fff;" onclick="closeUserManagementModal()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.2rem;display:flex;flex-direction:column;gap:1rem;">
+        <input type="file" id="quickMemberPhotoInput" accept="image/*" style="display:none;" onchange="handleQuickMemberPhotoUpload(event)" />
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
+          <div style="font-size:0.88rem;color:#475569;font-weight:700;">
+            ລາຍຊື່ສະມາຊິກໃນລະບົບ (<span id="userCountBadge">0</span> ຄົນ)
+          </div>
+          <button type="button" class="btn btn-primary btn-sm" onclick="openMemberFormModal()" style="display:inline-flex;align-items:center;gap:0.35rem;font-weight:700;border-radius:8px;">
+            ➕ ເພີ່ມສະມາຊິກໃໝ່
+          </button>
+        </div>
+
+        <!-- User Cards / Table List Container -->
+        <div id="userListContainer" style="display:flex;flex-direction:column;gap:0.6rem;max-height:380px;overflow-y:auto;padding-right:0.2rem;">
+          <!-- Dynamically rendered list of users -->
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:0.75rem 1.2rem;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeUserManagementModal()">ປິດ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub-Modal: Add / Edit Member Form -->
+  <div id="memberFormModal" class="modal-backdrop no-print" style="display:none;z-index:10000;">
+    <div class="modal-box" style="max-width:520px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.4);">
+      <div class="modal-header" style="background:linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);color:#fff;">
+        <div class="card-title" style="color:#fff;" id="memberFormModalTitle">
+          👤 ເພີ່ມສະມາຊິກໃໝ່
+        </div>
+        <button class="cart-remove" style="color:#fff;" onclick="closeMemberFormModal()">✕</button>
+      </div>
+      <form onsubmit="handleSaveMember(event)" style="padding:1.25rem;display:flex;flex-direction:column;gap:0.9rem;">
+        <input type="hidden" id="memberFormId" value="" />
+        <input type="hidden" id="memberAvatarDataInput" value="" />
+
+        <!-- Member Profile Picture Upload (ຮູບເຈົ້າຂອງຮ້ານ / ພະນັກງານຂາຍ) -->
+        <div style="display:flex;align-items:center;gap:0.9rem;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:12px;padding:0.75rem 0.9rem;">
+          <div id="memberAvatarPreviewWrap" style="width:62px;height:62px;border-radius:50%;background:#eff6ff;color:#2563eb;border:2px solid #93c5fd;display:flex;align-items:center;justify-content:center;font-size:1.75rem;overflow:hidden;flex-shrink:0;">
+            👤
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.35rem;flex:1;">
+            <div style="font-size:0.84rem;font-weight:800;color:#1e293b;">📷 ຮູບໂປຣໄຟລ໌ (ເຈົ້າຂອງຮ້ານ / ພະນັກງານຂາຍ)</div>
+            <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
+              <label class="btn btn-outline btn-sm" style="cursor:pointer;border-color:#2563eb;color:#1d4ed8;background:#eff6ff;font-weight:700;padding:0.28rem 0.65rem;font-size:0.78rem;">
+                📷 ເລືອກຮູບພາບ
+                <input type="file" id="memberAvatarFileInput" accept="image/*" style="display:none;" onchange="handleMemberModalPhotoChange(event)" />
+              </label>
+              <button type="button" class="btn btn-outline btn-sm" onclick="clearMemberModalPhoto()" style="padding:0.28rem 0.65rem;font-size:0.78rem;">
+                🔄 ລຶບຮູບ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div class="form-group">
+            <label style="font-size:0.84rem;font-weight:700;color:#334155;">ຊື່-ນາມສະກຸນ ຫຼື ຊື່ຫຼິ້ນ *</label>
+            <input type="text" id="memberNameInput" class="input" placeholder="ເຊັ່ນ: ນາງ ດາວອນ" required />
+          </div>
+          <div class="form-group">
+            <label style="font-size:0.84rem;font-weight:700;color:#334155;">ຊື່ເຂົ້າໃຊ້ (Username) *</label>
+            <input type="text" id="memberUsernameInput" class="input" placeholder="ເຊັ່ນ: daphone" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label style="font-size:0.84rem;font-weight:700;color:#334155;">ລະຫັດຜ່ານ / PIN *</label>
+          <input type="password" id="memberPasswordInput" class="input" placeholder="ລະຫັດຜ່ານ 4 ໂຕຂຶ້ນໄປ" required />
+        </div>
+
+        <!-- Role Selection -->
+        <div class="form-group">
+          <label style="font-size:0.84rem;font-weight:700;color:#334155;">ບົດບາດ (Role) *</label>
+          <select id="memberRoleSelect" class="input" onchange="handleMemberRoleChange()" style="font-weight:700;">
+            <option value="owner">👑 ເຈົ້າຂອງຮ້ານ (ເຂົ້າໄດ້ທຸກຟັງຊັ້ນ)</option>
+            <option value="cashier">🛒 ຄົນຂາຍ (ສະເພາະໜ້າອອກບິນ)</option>
+            <option value="custom">⚙️ ກຳນົດສິດທິເອງ (Custom)</option>
+          </select>
+        </div>
+
+        <!-- Permissions Checkboxes -->
+        <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:0.75rem 0.9rem;">
+          <div style="font-size:0.82rem;font-weight:800;color:#1e293b;margin-bottom:0.5rem;">
+            🔐 ສິດທິໃນການເຂົ້າເຖິງເມນູຕ່າງໆ:
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.45rem;font-size:0.82rem;">
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+              <input type="checkbox" id="perm_pos" checked />
+              <span>🛒 ອອກບິນ & ສະແກນ</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+              <input type="checkbox" id="perm_catalog" />
+              <span>📦 ສິນຄ້າ ແລະ ບໍລິການ</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+              <input type="checkbox" id="perm_machines" />
+              <span>🖨️ ບັນຊີອຸປະກອນ</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+              <input type="checkbox" id="perm_history" />
+              <span>📊 ລາຍການບິນ</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+              <input type="checkbox" id="perm_summary" />
+              <span>💰 ລາຍຮັບ-ລາຍຈ່າຍ</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+              <input type="checkbox" id="perm_purchase" />
+              <span>📝 ແຜນຊື້ສິນຄ້າ</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;">
+              <input type="checkbox" id="perm_settings" />
+              <span>⚙️ ຕັ້ງຄ່າ & Cloud</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.4rem;">
+          <button type="button" class="btn btn-outline" onclick="closeMemberFormModal()">ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary" style="background:#2563eb;border-color:#1d4ed8;font-weight:700;">
+            💾 ບັນທຶກສະມາຊິກ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 6: BARCODE / PRODUCT CODE SCANNER           -->
+  <!-- ================================================= -->
+  <div id="barcodeScannerModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:520px;">
+      <div class="modal-header" style="background:linear-gradient(135deg,#ea580c 0%,#f97316 100%);color:#fff;">
+        <div class="card-title" style="color:#fff;">📷 ສະແກນລະຫັດສິນຄ້າ / ບາໂຄ້ດ (Barcode Scanner)</div>
+        <button class="cart-remove" style="color:#fff;" onclick="closeBarcodeScannerModal()">✕</button>
+      </div>
+      <div class="modal-body" style="display:flex;flex-direction:column;gap:0.85rem;">
+        <!-- Camera Viewfinder -->
+        <div id="scannerCameraContainer" class="scanner-camera-box" style="display:none;">
+          <video id="barcodeScannerVideo" autoplay playsinline muted class="scanner-video"></video>
+          <div class="scanner-laser-line"></div>
+          <div class="scanner-camera-hint">ຈັດບາໂຄ້ດ ຫຼື QR ໃຫ້ຢູ່ໃນກອບເພື່ອສະແກນອັດຕະໂນມັດ</div>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+          <span style="font-size:0.82rem;font-weight:700;color:var(--text-secondary);">
+            🔫 ຮອງຮັບເຄື່ອງຍິງບາໂຄ້ດ (USB/Bluetooth) & ກ້ອງສະແກນ:
+          </span>
+          <button type="button" id="toggleCameraScanBtn" class="btn btn-outline btn-sm" style="border-color:#f97316;color:#ea580c;" onclick="toggleCameraBarcodeScanner()">
+            📷 ເປີດກ້ອງສະແກນບາໂຄ້ດ
+          </button>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;">
+          <input
+            type="text"
+            id="modalBarcodeInput"
+            class="input"
+            style="border:2px solid #f97316;font-weight:800;"
+            placeholder="ຍິງບາໂຄ້ດໃສ່ບ່ອນນີ້ ຫຼື ພິມລະຫັດສິນຄ້າ ແລ້ວກົດ Enter..."
+            autocomplete="off"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();submitModalBarcodeScan();}"
+          />
+          <button type="button" class="pos-scanner-btn" onclick="submitModalBarcodeScan()">
+            ✅ ຕົກລົງ
+          </button>
+        </div>
+
+        <div id="modalScanStatus" style="font-size:0.84rem;font-weight:700;color:#15803d;display:none;background:#dcfce7;padding:0.45rem 0.75rem;border-radius:6px;border:1px solid #86efac;"></div>
+
+        <div>
+          <div style="font-size:0.8rem;font-weight:800;color:var(--text-secondary);margin-bottom:0.4rem;">
+            ⚡ ກົດເລືອກລະຫັດສິນຄ້າດ່ວນ (Quick Code Scan):
+          </div>
+          <div id="scannerQuickCodeList" class="scanner-quick-grid"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeBarcodeScannerModal()">ປິດໜ້າຕ່າງ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 7: ADD / EDIT PURCHASE PLAN ITEM            -->
+  <!-- ================================================= -->
+  <div id="purchaseModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:480px;">
+      <div class="modal-header">
+        <div id="purchaseModalTitle" class="card-title">📝 ເພີ່ມລາຍການແຜນຊື້ສິນຄ້າ</div>
+        <button class="cart-remove" onclick="closePurchaseModal()">✕</button>
+      </div>
+      <form onsubmit="savePurchaseModalForm(event)">
+        <div class="modal-body">
+          <input type="hidden" id="purchaseIdInput" />
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>ຊື່ລາຍການສິນຄ້າທີ່ຈະຊື້</label>
+              <input
+                type="text"
+                id="purchaseNameInput"
+                class="input"
+                placeholder="ເຊັ່ນ: ເຈ້ຍ A4 Double A 80g (ຍົກແກັດ)"
+                required
+                oninput="updatePurchaseModalPreviewTotal()"
+              />
+            </div>
+            <div class="form-group">
+              <label>ລາຄາຕໍ່ໜ່ວຍ (ກີບ)</label>
+              <input
+                type="number"
+                id="purchasePriceInput"
+                class="input"
+                min="0"
+                step="100"
+                required
+                oninput="updatePurchaseModalPreviewTotal()"
+              />
+            </div>
+            <div class="form-group">
+              <label>ຈຳນວນ</label>
+              <input
+                type="number"
+                id="purchaseQtyInput"
+                class="input"
+                min="1"
+                value="1"
+                required
+                oninput="updatePurchaseModalPreviewTotal()"
+              />
+            </div>
+            <div class="form-group full">
+              <div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:8px;padding:0.65rem 0.9rem;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:700;color:#9a3412;">💰 ລາຄາລວມລາຍການນີ້:</span>
+                <strong id="purchaseModalTotalPreview" style="font-size:1.15rem;color:#ea580c;">0 ກີບ</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closePurchaseModal()">ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary">💾 ບັນທຶກລາຍການ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: REORDER PRODUCT INTO PURCHASE PLAN         -->
+  <!-- ================================================= -->
+  <div id="reorderModal" class="modal-backdrop no-print" onclick="if(event.target===this)closeReorderModal()">
+    <div class="modal-box" style="max-width:500px;">
+      <div class="modal-header" style="background:#fff7ed;border-bottom:2px solid #fdba74;">
+        <div class="card-title" style="color:#9a3412;display:flex;align-items:center;gap:0.5rem;">
+          <span>📦 ສັ່ງເພີ່ມສິນຄ້າເຂົ້າແຜນຈັດຊື້</span>
+        </div>
+        <button type="button" class="cart-remove" onclick="closeReorderModal()">✕</button>
+      </div>
+      <form onsubmit="saveReorderModalForm(event)">
+        <div class="modal-body" style="padding:1.25rem;">
+          <input type="hidden" id="reorderProductId" />
+          
+          <!-- Product preview box -->
+          <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:0.85rem 1rem;margin-bottom:1.15rem;display:flex;gap:0.85rem;align-items:center;">
+            <img id="reorderProductImg" src="" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:8px;border:1.5px solid #fdba74;flex-shrink:0;" />
+            <div style="flex:1;min-width:0;">
+              <div id="reorderProductName" style="font-weight:800;font-size:1.02rem;color:#0f172a;line-height:1.3;">-</div>
+              <div style="font-size:0.82rem;color:#64748b;margin-top:0.25rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+                <span>ລະຫັດ: <strong id="reorderProductCode" style="color:#0f172a;">-</strong></span>
+                <span>ສະຕັອກປັດຈຸບັນ: <strong id="reorderProductStock" style="color:#ea580c;">-</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- Qty -->
+            <div class="form-group full">
+              <label style="font-weight:700;color:#334155;">
+                ຈຳນວນທີ່ຕ້ອງການສັ່ງເພີ່ມ (<span id="reorderUnitLabel">ໜ່ວຍ</span>) <span style="color:#ef4444;">*</span>
+              </label>
+              <input
+                type="number"
+                id="reorderQtyInput"
+                class="input"
+                min="1"
+                value="10"
+                required
+                oninput="updateReorderModalPreviewTotal()"
+                style="font-size:1.1rem;font-weight:700;"
+              />
+            </div>
+
+            <!-- Cost / Purchase price -->
+            <div class="form-group full">
+              <label style="font-weight:700;color:#334155;">
+                ລາຄາຈັດຊື້ / ຕົ້ນທຶນໃໝ່ຕໍ່ໜ່ວຍ (ກີບ) <span style="color:#ef4444;">*</span>
+              </label>
+              <input
+                type="number"
+                id="reorderCostInput"
+                class="input"
+                min="0"
+                step="500"
+                required
+                oninput="updateReorderModalPreviewTotal()"
+                style="font-size:1.1rem;font-weight:700;"
+              />
+              <small style="color:#64748b;font-size:0.78rem;margin-top:0.2rem;display:block;">
+                💡 ຕົ້ນທຶນເດີມ: <span id="reorderOldCostLabel" style="font-weight:700;color:#0f172a;">0 ກີບ</span> (ລາຄາອາດຈະມີການປ່ຽນແປງ ສາມາດປ້ອນລາຄາຈັດຊື້ໃໝ່ໄດ້)
+              </small>
+            </div>
+
+            <!-- Selling price -->
+            <div class="form-group full">
+              <label style="font-weight:700;color:#334155;">
+                ລາຄາຂາຍຕໍ່ໜ່ວຍ (ກີບ) <span style="color:#64748b;font-weight:400;">(ປັບປ່ຽນຕາມຕົ້ນທຶນໃໝ່)</span>
+              </label>
+              <input
+                type="number"
+                id="reorderPriceInput"
+                class="input"
+                min="0"
+                step="500"
+                required
+                style="font-size:1.1rem;font-weight:700;color:#ea580c;"
+              />
+              <small style="color:#64748b;font-size:0.78rem;margin-top:0.2rem;display:block;">
+                🏷️ ລາຄາຂາຍເດີມ: <span id="reorderOldPriceLabel" style="font-weight:700;color:#0f172a;">0 ກີບ</span>
+              </small>
+            </div>
+
+            <!-- Grand total preview -->
+            <div class="form-group full">
+              <div style="background:#fff7ed;border:1.5px solid #fdba74;border-radius:8px;padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:800;color:#9a3412;font-size:0.95rem;">💰 ຍອດລວມຕົ້ນທຶນທີ່ຈະສັ່ງຊື້:</span>
+                <strong id="reorderTotalPreview" style="font-size:1.25rem;color:#ea580c;font-variant-numeric:tabular-nums;">0 ກີບ</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="background:#f8fafc;padding:0.85rem 1.25rem;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:0.6rem;">
+          <button type="button" class="btn btn-outline" onclick="closeReorderModal()">ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary" style="background:#ea580c;border-color:#ea580c;font-weight:800;">
+            📝 ບັນທຶກເຂົ້າແຜນຈັດຊື້
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 8: HELD BILLS LIST (ລາຍການພັກບິນ)            -->
+  <!-- ================================================= -->
+  <div id="heldBillsModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:980px;width:96vw;">
+      <div class="modal-header" style="background:#fff7ed;border-bottom:2px solid #fdba74;">
+        <div class="card-title" style="color:#9a3412;">📋 ລາຍການພັກບິນ (ບິນທີ່ພັກໄວ້ຊົ່ວຄາວ)</div>
+        <button type="button" class="cart-remove" onclick="closeHeldBillsModal()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:0;max-height:78vh;overflow-y:auto;">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:45px;text-align:center;">ລຳດັບ</th>
+                <th style="width:160px;text-align:center;">ຈັດການ</th>
+                <th>ວັນທີ & ເວລາພັກບິນ</th>
+                <th>ລູກຄ້າ / ຫ້ອງການ & ເບີໂທ</th>
+                <th>ລາຍລະອຽດສິນຄ້າທັງໝົດ</th>
+                <th>ວິທີຊຳລະ</th>
+                <th style="text-align:right;">ຍອດລວມທັງໝົດ</th>
+              </tr>
+            </thead>
+            <tbody id="heldBillsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeHeldBillsModal()">ປິດໜ້າຕ່າງ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 9: RECEIPT SETTINGS (ຕັ້ງຄ່າຂໍ້ມູນໃບບິນ)      -->
+  <!-- ================================================= -->
+  <div id="receiptSettingsModal" class="modal-backdrop no-print" style="z-index:1200;">
+    <div class="modal-box" style="max-width:480px;">
+      <div class="modal-header" style="background:#fff7ed;border-bottom:2px solid #fdba74;">
+        <div class="card-title" style="color:#9a3412;">⚙️ ຕັ້ງຄ່າຂໍ້ມູນໃບບິນຮັບເງິນ</div>
+        <button type="button" class="cart-remove" onclick="closeReceiptSettingsModal()">✕</button>
+      </div>
+      <form onsubmit="saveReceiptSettingsForm(event)">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label>📞 ເບີໂທລະສັບຂອງຮ້ານ / WhatsApp</label>
+              <input
+                type="text"
+                id="rcptPhoneInput"
+                class="input"
+                placeholder="ເຊັ່ນ: 020 5555 8899"
+                required
+              />
+            </div>
+
+            <div class="form-group full">
+              <label>📲 ຮູບ QR Code ຮັບເງິນຂອງຮ້ານ (BCEL One / ທະນາຄານ)</label>
+              <div style="display:flex;align-items:center;gap:0.85rem;background:#fff7ed;border:1.5px dashed #fdba74;border-radius:10px;padding:0.75rem;">
+                <div style="width:92px;height:92px;border-radius:8px;background:#ffffff;border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                  <img id="rcptQrPreviewImg" src="" alt="QR Preview" style="width:100%;height:100%;object-fit:contain;display:none;" />
+                  <span id="rcptQrPlaceholder" style="font-size:0.72rem;color:#9a3412;text-align:center;padding:0.25rem;">QR ອັດຕະໂນມັດ</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:0.45rem;flex:1;">
+                  <label class="btn btn-outline btn-sm" style="cursor:pointer;justify-content:center;border-color:#f97316;color:#ea580c;">
+                    📷 ເລືອກຮູບ QR ຈາກເຄື່ອງ
+                    <input type="file" id="rcptQrFileInput" accept="image/*" style="display:none;" onchange="handleReceiptQrImageUpload(event)" />
+                  </label>
+                  <button type="button" class="btn btn-outline btn-sm" onclick="clearReceiptQrImage()">
+                    🔄 ລຶບຮູບ QR / ໃຊ້ຄ່າເລີ່ມຕົ້ນ
+                  </button>
+                  <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:var(--text-secondary);cursor:pointer;margin-top:0.1rem;">
+                    <input type="checkbox" id="rcptShowQrAlwaysInput" style="width:16px;height:16px;" />
+                    <span>ສະແດງ QR Code ໃນທຸກໃບບິນ</span>
+                  </label>
+                </div>
+              </div>
+              <input type="hidden" id="rcptQrDataInput" />
+            </div>
+
+            <div class="form-group full">
+              <label>🙏 ຂໍ້ຄວາມຂອບໃຈລູກຄ້າທ້າຍບິນ</label>
+              <textarea
+                id="rcptThankYouInput"
+                class="input"
+                rows="3"
+                style="resize:vertical;font-family:inherit;"
+                placeholder="ເຊັ່ນ: ຂອບໃຈລູກຄ້າທຸກທ່ານທີ່ມາອຸດໜູນ 🙏"
+                required
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeReceiptSettingsModal()">ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary">💾 ບັນທຶກການຕັ້ງຄ່າໃບບິນ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL 10: EDIT BILL DETAILS                       -->
+  <!-- ================================================= -->
+  <div id="editBillModal" class="modal-backdrop no-print">
+    <div class="modal-box" style="max-width:540px;width:95vw;">
+      <div class="modal-header" style="background:#fef2f2;border-bottom:2px solid #fca5a5;">
+        <div class="card-title" style="color:#b91c1c;display:flex;align-items:center;gap:0.55rem;">
+          <span>✏️ ແກ້ໄຂລາຍລະອຽດໃບບິນ</span>
+          <span id="editBillModalIdBadge" style="font-size:0.8rem;background:#fee2e2;color:#991b1b;border:1px solid #f87171;padding:0.15rem 0.55rem;border-radius:999px;font-weight:800;"></span>
+        </div>
+        <button type="button" class="cart-remove" onclick="closeEditBillModal()">✕</button>
+      </div>
+      <form id="editBillForm" onsubmit="saveEditBillForm(event)">
+        <div class="modal-body" style="padding:1.25rem;">
+          <input type="hidden" id="editBillIdInput" />
+          
+          <div class="form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:0.9rem;">
+            <div class="form-group full" style="grid-column:1 / -1;">
+              <label style="font-weight:700;font-size:0.88rem;color:#1e293b;">📅 ວັນທີ ແລະ ເວລາ</label>
+              <input type="datetime-local" id="editBillDateInput" class="input" required style="font-family:inherit;" />
+            </div>
+
+            <div class="form-group">
+              <label style="font-weight:700;font-size:0.88rem;color:#1e293b;">👤 ຊື່ລູກຄ້າ / ຫ້ອງການ</label>
+              <input type="text" id="editBillCustomerInput" class="input" required placeholder="ເຊັ່ນ: ລູກຄ້າທົ່ວໄປ" />
+            </div>
+
+            <div class="form-group">
+              <label style="font-weight:700;font-size:0.88rem;color:#1e293b;">📞 ເບີໂທລະສັບ</label>
+              <input type="text" id="editBillPhoneInput" class="input" placeholder="ເຊັ່ນ: 020..." />
+            </div>
+
+            <div class="form-group">
+              <label style="font-weight:700;font-size:0.88rem;color:#1e293b;">💳 ວິທີການຊຳລະ</label>
+              <select id="editBillPaymentInput" class="select" required>
+                <option value="cash">💵 ເງິນສົດ</option>
+                <option value="bcel">📲 ເງິນໂອນ (BCEL One)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label style="font-weight:700;font-size:0.88rem;color:#1e293b;">📌 ສະຖານະໃບບິນ</label>
+              <select id="editBillStatusInput" class="select" required>
+                <option value="paid">✅ ຊຳລະເງິນແລ້ວ</option>
+                <option value="unpaid">⏳ ຄ້າງຊຳລະ (ຕິດໜີ້)</option>
+              </select>
+            </div>
+
+            <div class="form-group full" style="grid-column:1 / -1;">
+              <label style="font-weight:700;font-size:0.88rem;color:#1e293b;">💰 ຍອດສຸດທິ (ກີບ)</label>
+              <input type="number" id="editBillTotalInput" class="input" min="0" step="100" required style="font-size:1.15rem;font-weight:800;color:var(--primary);" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:0.75rem;">
+          <button type="button" class="btn btn-outline" onclick="closeEditBillModal()">✕ ຍົກເລີກ</button>
+          <button type="submit" class="btn btn-primary" style="background:#dc2626;border-color:#b91c1c;">💾 ບັນທຶກການແກ້ໄຂ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: LOGIN / AUTHENTICATION                     -->
+  <!-- ================================================= -->
+  <div id="loginModal" class="modal-backdrop no-print" style="display:none;z-index:9999;backdrop-filter:blur(10px);background:rgba(15,23,42,0.85);">
+    <div class="modal-box" style="max-width:420px;border:2px solid #3b82f6;border-radius:18px;box-shadow:0 20px 40px rgba(0,0,0,0.4);overflow:hidden;background:#ffffff;">
+      <div style="background:linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);padding:1.5rem 1.25rem;text-align:center;color:#ffffff;">
+        <div style="width:68px;height:68px;border-radius:50%;margin:0 auto 0.6rem;display:flex;align-items:center;justify-content:center;background:#ffffff;font-size:2.2rem;box-shadow:0 4px 12px rgba(0,0,0,0.25);border:3px solid #10b981;">🥬</div>
+        <h2 style="font-size:1.25rem;font-weight:800;margin:0 0 0.2rem;color:#ffffff;">ຮ້ານຂາຍຜັກສົດ</h2>
+        <div style="font-size:0.82rem;opacity:0.9;color:#bfdbfe;">ລະບົບຂາຍໜ້າຮ້ານ & ຄຸ້ມຄອງສິນຄ້າ-ອຸປະກອນ</div>
+      </div>
+      <form onsubmit="handleLoginSubmit(event)" style="padding:1.5rem 1.25rem;">
+        <div style="text-align:center;margin-bottom:1.2rem;">
+          <h3 style="font-size:1.15rem;font-weight:800;color:#1e293b;margin:0 0 0.25rem;">🔐 ເຂົ້າສູ່ລະບົບ</h3>
+          <p style="font-size:0.8rem;color:#64748b;margin:0;">ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້ ແລະ ລະຫັດຜ່ານເພື່ອເຂົ້າໃຊ້ງານ</p>
+        </div>
+
+        <div id="loginErrorMessage" style="display:none;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:0.5rem 0.75rem;border-radius:8px;font-size:0.82rem;font-weight:700;margin-bottom:1rem;text-align:center;">
+          ⚠️ ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ!
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:0.9rem;">
+          <div class="form-group">
+            <label style="font-size:0.84rem;font-weight:700;color:#334155;">👤 ຊື່ຜູ້ໃຊ້ງານ (Username)</label>
+            <input type="text" id="loginUsernameInput" class="input" placeholder="ເຊັ່ນ: admin" value="admin" required style="border-radius:8px;padding:0.6rem 0.8rem;" />
+          </div>
+
+          <div class="form-group">
+            <label style="font-size:0.84rem;font-weight:700;color:#334155;">🔑 ລະຫັດຜ່ານ / PIN (Password)</label>
+            <input type="password" id="loginPasswordInput" class="input" placeholder="ລະຫັດຜ່ານ (ເລີ່ມຕົ້ນ: 1234)" value="1234" required style="border-radius:8px;padding:0.6rem 0.8rem;" />
+          </div>
+
+          <div style="background:#f8fafc;padding:0.6rem 0.75rem;border-radius:8px;border:1px dashed #cbd5e1;font-size:0.75rem;color:#64748b;">
+            <div style="font-weight:700;margin-bottom:0.25rem;color:#334155;">⚡ ບັນຊີເຂົ້າສູ່ລະບົບດ່ວນ:</div>
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;" id="quickLoginButtonsContainer">
+              <button type="button" class="btn btn-outline btn-sm" style="padding:0.18rem 0.55rem;font-size:0.75rem;border-color:#93c5fd;color:#1d4ed8;" onclick="setQuickLoginAccount('admin', '1234')">👑 ເຈົ້າຂອງຮ້ານ (admin)</button>
+              <button type="button" class="btn btn-outline btn-sm" style="padding:0.18rem 0.55rem;font-size:0.75rem;border-color:#86efac;color:#15803d;" onclick="setQuickLoginAccount('cashier', '1234')">🛒 ຄົນຂາຍ (cashier)</button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="padding:0.75rem;font-size:1rem;font-weight:800;border-radius:10px;margin-top:0.3rem;background:linear-gradient(135deg, #2563eb, #1d4ed8);border:none;box-shadow:0 4px 12px rgba(37,99,235,0.35);cursor:pointer;">
+            🔐 ເຂົ້າສູ່ລະບົບ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: DEVICE MODE SELECTION                      -->
+  <!-- ================================================= -->
+  <div id="deviceModeModal" class="modal-backdrop no-print" style="display:none;z-index:9998;backdrop-filter:blur(8px);background:rgba(15,23,42,0.85);">
+    <div class="modal-box" style="max-width:560px;border-radius:20px;overflow:hidden;box-shadow:0 20px 45px rgba(0,0,0,0.35);background:#ffffff;">
+      <div style="background:linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);padding:1.4rem 1.25rem;text-align:center;color:#ffffff;">
+        <h2 style="font-size:1.25rem;font-weight:800;margin:0 0 0.3rem;color:#ffffff;">📱 ເລືອກອຸປະກອນທີ່ໃຊ້ງານ</h2>
+        <div style="font-size:0.86rem;opacity:0.9;color:#93c5fd;">ກະລຸນາເລືອກວ່າທ່ານກຳລັງໃຊ້ມືຖື ຫຼື ແທັບເລັດ:</div>
+      </div>
+      <div style="padding:1.5rem 1.25rem;display:flex;flex-direction:column;gap:1rem;">
+        <div class="device-choice-grid">
+          <!-- Choice 1: Mobile Mode -->
+          <div class="device-mode-card" id="choiceCardMobile" onclick="selectDeviceMode('mobile')" title="ເລືອກໃຊ້ມືຖື (ສະເພາະບິນການຂາຍ)">
+            <div class="device-card-img-wrap">
+              <svg viewBox="0 0 160 140" width="140" height="125" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Phone Shadow -->
+                <ellipse cx="80" cy="134" rx="36" ry="5" fill="#000000" opacity="0.12"/>
+                <!-- Phone Outer Body -->
+                <rect x="48" y="4" width="64" height="126" rx="14" fill="#0f172a" stroke="#334155" stroke-width="2.5"/>
+                <!-- Screen -->
+                <rect x="52" y="10" width="56" height="114" rx="10" fill="#f8fafc"/>
+                <!-- Dynamic Island / Speaker -->
+                <rect x="68" y="14" width="24" height="4.5" rx="2.25" fill="#0f172a"/>
+                <!-- Screen Header -->
+                <rect x="52" y="10" width="56" height="22" rx="10" fill="#ea580c"/>
+                <rect x="57" y="18" width="22" height="4.5" rx="2" fill="#ffedd5"/>
+                <!-- Barcode Scanner Frame on Mobile -->
+                <rect x="57" y="38" width="46" height="30" rx="5" fill="#ffedd5" stroke="#f97316" stroke-width="1.2" stroke-dasharray="3 3"/>
+                <!-- Barcode lines inside -->
+                <line x1="64" y1="43" x2="64" y2="63" stroke="#c2410c" stroke-width="1.8"/>
+                <line x1="68" y1="43" x2="68" y2="63" stroke="#c2410c" stroke-width="2.6"/>
+                <line x1="73" y1="43" x2="73" y2="63" stroke="#c2410c" stroke-width="1.2"/>
+                <line x1="77" y1="43" x2="77" y2="63" stroke="#c2410c" stroke-width="3"/>
+                <line x1="83" y1="43" x2="83" y2="63" stroke="#c2410c" stroke-width="1.2"/>
+                <line x1="87" y1="43" x2="87" y2="63" stroke="#c2410c" stroke-width="2.2"/>
+                <line x1="92" y1="43" x2="92" y2="63" stroke="#c2410c" stroke-width="1"/>
+                <line x1="96" y1="43" x2="96" y2="63" stroke="#c2410c" stroke-width="1.8"/>
+                <!-- Red Scan Laser Beam -->
+                <line x1="55" y1="53" x2="105" y2="53" stroke="#ef4444" stroke-width="1.8"/>
+                <!-- Cart Item Row -->
+                <rect x="57" y="74" width="46" height="15" rx="3.5" fill="#e2e8f0"/>
+                <rect x="61" y="78" width="20" height="3.5" rx="1.5" fill="#64748b"/>
+                <rect x="61" y="83" width="13" height="2.5" rx="1" fill="#94a3b8"/>
+                <rect x="88" y="78" width="11" height="7" rx="2" fill="#10b981"/>
+                <!-- Checkout Button -->
+                <rect x="57" y="94" width="46" height="15" rx="5" fill="#10b981"/>
+                <rect x="67" y="99" width="26" height="5" rx="2.5" fill="#ffffff" opacity="0.9"/>
+                <!-- Home Indicator Bar -->
+                <rect x="70" y="118" width="20" height="2.5" rx="1.2" fill="#94a3b8"/>
+              </svg>
+            </div>
+            <div class="device-card-label">
+              <span style="font-size:1.15rem;font-weight:800;color:#0f172a;">📱 ໃຊ້ມືຖື</span>
+              <small style="color:#ea580c;font-weight:700;font-size:0.82rem;">ບິນການຂາຍ & ຂໍ້ມູນຮ້ານ</small>
+            </div>
+          </div>
+
+          <!-- Choice 2: Tablet / PC Mode -->
+          <div class="device-mode-card" id="choiceCardTablet" onclick="selectDeviceMode('tablet')" title="ເລືອກໃຊ້ແທັບເລັດ (ລະບົບເຕັມຮູບແບບ)">
+            <div class="device-card-img-wrap">
+              <svg viewBox="0 0 160 140" width="140" height="125" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Desk Shadow -->
+                <ellipse cx="80" cy="134" rx="55" ry="5" fill="#000000" opacity="0.12"/>
+                <!-- Monitor / Tablet Body -->
+                <rect x="12" y="8" width="136" height="92" rx="8" fill="#0f172a" stroke="#334155" stroke-width="2.5"/>
+                <!-- Screen Area -->
+                <rect x="18" y="14" width="124" height="80" rx="5" fill="#f8fafc"/>
+                <!-- Screen Browser Bar -->
+                <rect x="18" y="14" width="124" height="14" rx="5" fill="#2563eb"/>
+                <circle cx="25" cy="21" r="2.2" fill="#ef4444"/>
+                <circle cx="31" cy="21" r="2.2" fill="#f59e0b"/>
+                <circle cx="37" cy="21" r="2.2" fill="#10b981"/>
+                <rect x="46" y="18" width="48" height="6" rx="3" fill="#60a5fa" opacity="0.6"/>
+                <!-- Screen Content: Sidebar -->
+                <rect x="22" y="32" width="24" height="58" rx="3" fill="#e2e8f0"/>
+                <rect x="25" y="37" width="18" height="4.5" rx="2" fill="#94a3b8"/>
+                <rect x="25" y="45" width="18" height="4.5" rx="2" fill="#94a3b8"/>
+                <rect x="25" y="53" width="18" height="4.5" rx="2" fill="#94a3b8"/>
+                <!-- Content Dashboard Cards -->
+                <rect x="50" y="32" width="42" height="26" rx="3" fill="#dbeafe"/>
+                <rect x="54" y="36" width="20" height="4" rx="2" fill="#2563eb"/>
+                <rect x="96" y="32" width="42" height="26" rx="3" fill="#fef3c7"/>
+                <rect x="100" y="36" width="20" height="4" rx="2" fill="#d97706"/>
+                <rect x="50" y="62" width="88" height="28" rx="3" fill="#e2e8f0"/>
+                <rect x="54" y="67" width="34" height="4" rx="2" fill="#64748b"/>
+                <rect x="54" y="74" width="48" height="4" rx="2" fill="#94a3b8"/>
+                <rect x="54" y="81" width="26" height="4" rx="2" fill="#94a3b8"/>
+                <!-- Monitor Neck Stand -->
+                <path d="M72 100 L69 122 L91 122 L88 100 Z" fill="#64748b"/>
+                <!-- Stand Base -->
+                <rect x="55" y="122" width="50" height="6.5" rx="3.2" fill="#475569"/>
+              </svg>
+            </div>
+            <div class="device-card-label">
+              <span style="font-size:1.15rem;font-weight:800;color:#0f172a;">💻 ແທັບເລັດ</span>
+              <small style="color:#2563eb;font-weight:700;font-size:0.82rem;">ລະບົບເຕັມຮູບແບບ & ທຸກເມນູ</small>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;align-items:center;padding-top:0.6rem;border-top:1px solid #e2e8f0;">
+          <button type="button" class="btn btn-outline btn-sm" onclick="closeDeviceModeModal()" style="display:none;" id="btnCancelDeviceMode">ປິດ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: BARCODE STUDIO & PRINT (ສ້າງ & ພິມບາໂຄ້ດ)   -->
+  <!-- ================================================= -->
+  <div id="barcodeStudioModal" class="modal-backdrop no-print" style="display:none;z-index:9999;">
+    <div class="modal-box" style="max-width:700px;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 25px 55px rgba(0,0,0,0.35);">
+      <div class="modal-header" style="background:linear-gradient(135deg, #3730a3 0%, #4f46e5 100%);color:#fff;padding:0.9rem 1.25rem;">
+        <div class="card-title" style="color:#fff;display:flex;align-items:center;gap:0.5rem;font-size:1.15rem;">
+          🏷️ ອອກແບບ ແລະ ສັ່ງພິມບາໂຄ້ດສິນຄ້າ (Barcode Studio)
+        </div>
+        <button class="cart-remove" style="color:#fff;" onclick="closeBarcodeStudioModal()">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem;display:flex;flex-direction:column;gap:1rem;">
+        <div class="barcode-studio-grid">
+          <!-- Left Column: Simple Inputs -->
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <!-- Select existing product or create new -->
+            <div class="form-group">
+              <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">📦 ເລືອກສິນຄ້າຈາກສາງ (ຫຼື ພິມເອງ):</label>
+              <select id="barcodeProductSelect" class="input" onchange="onBarcodeProductSelectChange()" style="font-size:0.86rem;font-weight:700;">
+                <option value="">-- [ + ສ້າງບາໂຄ້ດ / ສິນຄ້າໃໝ່ ] --</option>
+              </select>
+            </div>
+
+            <!-- Product Name -->
+            <div class="form-group">
+              <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">🏷️ ຊື່ສິນຄ້າ:</label>
+              <input type="text" id="barcodeNameInput" class="input" placeholder="ເຊັ່ນ: ເຈ້ຍ A4 Double A 80g" oninput="updateBarcodeLivePreview()" style="font-size:0.88rem;" />
+            </div>
+
+            <!-- Barcode Code & Price Row -->
+            <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:0.6rem;">
+              <div class="form-group">
+                <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">🔢 ລະຫັດບາໂຄ້ດ (Code):</label>
+                <input type="text" id="barcodeCodeInput" class="input" placeholder="ເຊັ່ນ: PA-01" oninput="updateBarcodeLivePreview()" style="font-family:monospace;font-size:0.95rem;font-weight:700;" />
+              </div>
+              <div class="form-group">
+                <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">💰 ລາຄາຂາຍ (ກີບ):</label>
+                <input type="number" id="barcodePriceInput" class="input" placeholder="ເຊັ່ນ: 55000" oninput="updateBarcodeLivePreview()" style="font-size:0.9rem;font-weight:700;" />
+              </div>
+            </div>
+
+            <!-- Sticker Size Selection & Print Quantity Row -->
+            <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:0.6rem;">
+              <div class="form-group">
+                <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">📏 ຂະໜາດສະຕິກເກີ້:</label>
+                <select id="barcodeSizeSelect" class="input" onchange="onBarcodeSizeSelectChange()" style="font-weight:700;font-size:0.84rem;">
+                  <option value="50x30">50 × 30 mm (ມາດຕະຖານ - Thermal)</option>
+                  <option value="40x30">40 × 30 mm (ຂະໜາດກາງ)</option>
+                  <option value="35x25">35 × 25 mm (ຂະໜາດນ້ອຍ)</option>
+                  <option value="60x40">60 × 40 mm (ຂະໜາດໃຫຍ່)</option>
+                  <option value="52x29">A4 ສະຕິກເກີ້ 40 ດວງ (52.5 × 29.7 mm)</option>
+                  <option value="38x21">A4 ສະຕິກເກີ້ 65 ດວງ (38.1 × 21.2 mm)</option>
+                  <option value="70x37">A4 ສະຕິກເກີ້ 24 ດວງ (70 × 37 mm)</option>
+                  <option value="custom">⚙️ ກຳນົດຂະໜາດເອງ (mm)...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label style="font-size:0.84rem;font-weight:700;color:#1e293b;">🖨️ ຈຳນວນທີ່ຈະພິມ:</label>
+                <input type="number" id="barcodeQtyInput" class="input" value="12" min="1" max="500" style="font-weight:800;font-size:0.95rem;text-align:center;" />
+              </div>
+            </div>
+
+            <!-- Custom Size Inputs (Visible only when 'custom' is selected) -->
+            <div id="barcodeCustomSizeRow" style="display:none;gap:0.5rem;align-items:center;background:#f8fafc;padding:0.4rem 0.65rem;border-radius:8px;border:1px dashed #cbd5e1;">
+              <div style="display:flex;align-items:center;gap:0.3rem;flex:1;">
+                <span style="font-size:0.78rem;color:#475569;font-weight:700;">ກວ້າງ:</span>
+                <input type="number" id="barcodeCustomW" value="50" min="20" max="150" class="input" style="padding:0.3rem;font-size:0.82rem;font-weight:700;text-align:center;" oninput="updateBarcodeLivePreview()" />
+                <span style="font-size:0.78rem;color:#64748b;">mm</span>
+              </div>
+              <span style="font-weight:800;color:#94a3b8;">×</span>
+              <div style="display:flex;align-items:center;gap:0.3rem;flex:1;">
+                <span style="font-size:0.78rem;color:#475569;font-weight:700;">ສູງ:</span>
+                <input type="number" id="barcodeCustomH" value="30" min="15" max="150" class="input" style="padding:0.3rem;font-size:0.82rem;font-weight:700;text-align:center;" oninput="updateBarcodeLivePreview()" />
+                <span style="font-size:0.78rem;color:#64748b;">mm</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Live Real-Time Preview & Print Actions -->
+          <div style="display:flex;flex-direction:column;gap:0.8rem;background:#f8fafc;padding:0.9rem;border-radius:12px;border:1.5px solid #e2e8f0;justify-content:space-between;">
+            <div>
+              <div style="font-size:0.82rem;font-weight:800;color:#1e293b;margin-bottom:0.4rem;display:flex;align-items:center;justify-content:space-between;">
+                <span>✨ ຕົວຢ່າງສະຕິກເກີ້ (Live Preview):</span>
+                <span id="barcodeSizeBadge" style="font-size:0.72rem;background:#e0e7ff;color:#4338ca;padding:0.1rem 0.45rem;border-radius:999px;font-weight:700;">50 × 30 mm</span>
+              </div>
+              <div id="barcodeSinglePreviewWrap" style="background:#f1f5f9;padding:0.9rem;border-radius:10px;display:flex;justify-content:center;align-items:center;min-height:140px;border:1px dashed #cbd5e1;">
+                <div id="barcodeSinglePreview" class="barcode-sticker-preview">
+                  <!-- Live Sticker Rendered Here -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.4rem;">
+              <button type="button" class="btn btn-primary" onclick="printBarcodeSheet()" style="background:linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);border:none;padding:0.75rem;font-size:1rem;font-weight:800;border-radius:10px;box-shadow:0 4px 12px rgba(79, 70, 229, 0.35);display:flex;align-items:center;justify-content:center;gap:0.5rem;cursor:pointer;">
+                🖨️ ສັ່ງພິມບາໂຄ້ດ (Print)
+              </button>
+              <button type="button" id="btnSaveBarcodeToProd" class="btn btn-outline" onclick="saveBarcodeToProduct()" style="border-color:#10b981;color:#047857;background:#ecfdf5;font-weight:700;padding:0.45rem;border-radius:8px;font-size:0.84rem;display:flex;align-items:center;justify-content:center;gap:0.4rem;">
+                💾 ບັນທຶກລະຫັດນີ້ໃສ່ສິນຄ້າ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:0.65rem 1.25rem;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.76rem;color:#64748b;">ຮອງຮັບເຄື່ອງພິມສະຕິກເກີ້ Thermal ແລະ ເຈ້ຍ A4</span>
+        <button type="button" class="btn btn-outline btn-sm" onclick="closeBarcodeStudioModal()">ປິດໜ້າຕ່າງ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================= -->
+  <!-- MODAL: BCEL ONE QR PAYMENT POPUP                  -->
+  <!-- ================================================= -->
+  <div id="bcelQrPayModal" class="modal-backdrop no-print" onclick="if(event.target===this)closeBcelQrPayModal()">
+    <div class="modal-box" style="max-width:410px;width:92vw;border-radius:16px;overflow:hidden;">
+      <div class="modal-header" style="background:linear-gradient(135deg,#dc2626 0%,#991b1b 100%);color:#ffffff;padding:0.95rem 1.2rem;border-bottom:none;">
+        <div class="card-title" style="color:#ffffff;display:flex;align-items:center;gap:0.6rem;font-size:1.05rem;">
+          <img src="bcel-logo.png" alt="BCEL One" style="width:28px;height:28px;border-radius:50%;background:#ffffff;padding:2px;object-fit:contain;" />
+          <span>ຊຳລະເງິນດ້ວຍ BCEL One QR</span>
+        </div>
+        <button type="button" class="cart-remove" onclick="closeBcelQrPayModal()" style="color:#ffffff;background:rgba(255,255,255,0.2);">✕</button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem;text-align:center;background:#ffffff;">
+        <div style="font-weight:800;font-size:0.98rem;color:#0f172a;margin-bottom:0.65rem;">
+          ຮ້ານຂາຍຜັກສົດ
+        </div>
+
+        <div style="background:#f8fafc;border:2px dashed #fca5a5;border-radius:14px;padding:1rem;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:0.9rem;min-width:230px;">
+          <img id="bcelQrModalImg" src="" alt="BCEL One QR Code" style="width:210px;height:210px;object-fit:contain;border-radius:8px;background:#ffffff;padding:6px;box-shadow:0 2px 8px rgba(0,0,0,0.06);" />
+          <div style="margin-top:0.55rem;">
+            <input type="file" id="bcelQuickQrUploadInput" accept="image/*" style="display:none;" onchange="handleQuickBcelQrUpload(event)" />
+            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('bcelQuickQrUploadInput')?.click()" style="font-size:0.76rem;padding:0.25rem 0.65rem;border-color:#cbd5e1;color:#475569;">
+              📷 ປ່ຽນຮູບ QR ຮ້ານ
+            </button>
+          </div>
+        </div>
+
+        <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:12px;padding:0.8rem 1rem;margin-bottom:0.25rem;">
+          <div style="font-size:0.84rem;color:#991b1b;font-weight:700;margin-bottom:0.15rem;">💰 ລາຄາລວມທີ່ຕ້ອງຊຳລະ</div>
+          <div id="bcelQrModalTotalText" style="font-size:1.55rem;font-weight:900;color:#dc2626;font-variant-numeric:tabular-nums;">0 ກີບ</div>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding:0.85rem 1.2rem;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr auto;gap:0.5rem;">
+        <button type="button" class="pos-btn-charge pos-btn-receive" onclick="closeBcelQrPayModal(); checkoutReceiveOnly();" style="padding:0.6rem 0.75rem;font-size:0.9rem;">
+          💵 ຮັບເງິນ
+        </button>
+        <button type="button" class="pos-btn-charge pos-btn-print" onclick="closeBcelQrPayModal(); checkoutAndPrint();" style="padding:0.6rem 0.75rem;font-size:0.9rem;">
+          🖨️ ພິມບິນ
+        </button>
+        <button type="button" class="btn btn-outline" onclick="closeBcelQrPayModal()" style="padding:0.6rem 0.85rem;">ປິດ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print Area (Hidden in screen, visible only when printing barcodes) -->
+  <div id="barcodePrintArea" style="display:none;"></div>
+
+  <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+  <script src="config.js?v=11"></script>
+  <script src="app.js?v=11"></script>
+</body>
+</html>
