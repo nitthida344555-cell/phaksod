@@ -147,6 +147,9 @@
               <button type="button" class="pos-head-btn pos-head-btn-clear" onclick="clearCart()">
                 🗑️ ລ້າງບິນ
               </button>
+              <button type="button" class="pos-head-btn pos-head-btn-settings" onclick="openReceiptSettingsModal()" title="ຕັ້ງຄ່າຂໍ້ມູນໃບບິນ ແລະ ເຄື່ອງພິມ Sunmi">
+                ⚙️ ຕັ້ງຄ່າບິນ
+              </button>
             </div>
           </div>
 
@@ -776,7 +779,7 @@
         <button type="button" class="btn btn-outline" style="width:44px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:1.25rem;border-color:#fdba74;background:#fff7ed;color:#c2410c;border-radius:8px;flex-shrink:0;" onclick="openReceiptSettingsModal()" title="ແກ້ໄຂຂໍ້ມູນໃບບິນ (ເບີໂທ, QR, ຂໍ້ຄວາມ)">
           ⚙️
         </button>
-        <button type="button" class="btn btn-primary" style="flex:1;height:42px;font-size:0.95rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;border-radius:8px;" onclick="window.print()">
+        <button type="button" class="btn btn-primary" style="flex:1;height:42px;font-size:0.95rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;border-radius:8px;" onclick="printBillDirectly(currentReceiptBill)">
           🖨️ ສັ່ງພິມໃບບິນ
         </button>
         <button type="button" class="btn btn-outline" style="width:44px;height:42px;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:900;border-color:#fca5a5;background:#fef2f2;color:#dc2626;border-radius:8px;flex-shrink:0;" onclick="closeReceiptModal()" title="ປິດໜ້າຕ່າງ">
@@ -1992,8 +1995,41 @@
         <button type="button" class="cart-remove" onclick="closeReceiptSettingsModal()">✕</button>
       </div>
       <form onsubmit="saveReceiptSettingsForm(event)">
-        <div class="modal-body">
+        <div class="modal-body" style="max-height:74vh;overflow-y:auto;">
           <div class="form-grid">
+            <!-- Sunmi V1s / Receipt Printer Settings -->
+            <div class="form-group full" style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:10px;padding:0.75rem;">
+              <div style="font-weight:800;font-size:0.88rem;color:#0f172a;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;">
+                <span>🖨️ ຕັ້ງຄ່າເຄື່ອງພິມບິນ (Sunmi V1s / 58mm)</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 125px;gap:0.5rem;">
+                <div>
+                  <label style="font-size:0.76rem;color:#475569;margin-bottom:0.2rem;display:block;">ໂໝດການພິມບິນ:</label>
+                  <select id="rcptPrinterModeInput" class="input" onchange="onRcptPrinterModeChange()" style="font-size:0.82rem;font-weight:700;padding:0.42rem;">
+                    <option value="sunmi_system">🖨️ ພິມຜ່ານລະບົບ Sunmi / ບຣາວເຊີ (ຄ່າເລີ່ມຕົ້ນ)</option>
+                    <option value="sunmi_rawbt">⚡ ພິມອອກ Sunmi V1s ທັນທີ (ຜ່ານ RawBT)</option>
+                    <option value="bt_escpos">📶 ພິມກົງຜ່ານ Bluetooth (ESC/POS)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:0.76rem;color:#475569;margin-bottom:0.2rem;display:block;">ຂະໜາດເຈ້ຍ:</label>
+                  <select id="rcptPaperWidthInput" class="input" style="font-size:0.82rem;font-weight:700;padding:0.42rem;">
+                    <option value="58">58mm (Sunmi)</option>
+                    <option value="80">80mm</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display:flex;gap:0.45rem;margin-top:0.55rem;flex-wrap:wrap;align-items:center;">
+                <button type="button" id="btnConnectReceiptBT" class="btn btn-outline btn-sm" onclick="connectReceiptBluetoothPrinter()" style="display:none;border-color:#2563eb;color:#1d4ed8;background:#eff6ff;font-weight:700;">
+                  📶 ເຊື່ອມຕໍ່ Bluetooth ເຄື່ອງພິມບິນ
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="testPrintSunmiReceiptSample()" style="border-color:#f97316;color:#c2410c;background:#fff7ed;font-weight:700;">
+                  🧪 ທົດສອບພິມບິນ (Sunmi 58mm)
+                </button>
+                <span id="rcptBtStatusText" style="font-size:0.74rem;color:#64748b;font-weight:700;"></span>
+              </div>
+            </div>
+
             <div class="form-group full">
               <label>📞 ເບີໂທລະສັບຂອງຮ້ານ / WhatsApp</label>
               <input
@@ -2001,7 +2037,6 @@
                 id="rcptPhoneInput"
                 class="input"
                 placeholder="ເຊັ່ນ: 020 5555 8899"
-                required
               />
             </div>
 

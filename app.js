@@ -11,7 +11,9 @@ const DEFAULT_RECEIPT_SETTINGS = {
   shopPhone: '',
   qrImageData: '',
   showQrAlways: false,
-  thankYouText: 'ຂອບໃຈລູກຄ້າທຸກທ່ານທີ່ມາອຸດໜູນ ຜັກສົດສະອາດ ຄຸນນະພາບດີ 🙏\nຮ້ານຂາຍຜັກສົດ'
+  thankYouText: 'ຂອບໃຈລູກຄ້າທຸກທ່ານທີ່ມາອຸດໜູນ ຜັກສົດສະອາດ ຄຸນນະພາບດີ 🙏\nຮ້ານຂາຍຜັກສົດ',
+  printerMode: 'sunmi_system',
+  paperWidth: '58'
 };
 
 const DEFAULT_CATEGORIES = [
@@ -2132,7 +2134,7 @@ function confirmCustomerPopupAndCheckout(event) {
   processCheckout(pendingCustomerPopupOptions);
 }
 
-function processCheckout(options = { print: false }) {
+function processCheckout(options = { print: false, directPrint: false }) {
   if (cart.length === 0) {
     alert('ກະລຸນາເລືອກສິນຄ້າ ຫຼື ບໍລິການໃສ່ບິນກ່ອນ!');
     return null;
@@ -2141,7 +2143,7 @@ function processCheckout(options = { print: false }) {
   const customerName = document.getElementById('posCustomerName')?.value.trim() || 'ລູກຄ້າທົ່ວໄປ';
   const customerPhone = document.getElementById('posCustomerPhone')?.value.trim() || '-';
 
-  if (selectedPaymentMethod === 'credit' && customerName === 'ລູກຄ້າທົ່ວໄປ') {
+  if (!options.directPrint && selectedPaymentMethod === 'credit' && customerName === 'ລູກຄ້າທົ່ວໄປ') {
     openCustomerPopupModal(options);
     return null;
   }
@@ -2183,7 +2185,12 @@ function processCheckout(options = { print: false }) {
   clearCart();
 
   if (options.print) {
-    openReceiptModal(newBill);
+    if (options.directPrint) {
+      showPosScanFeedback(`🖨️ ກຳລັງພິມບິນ "${newBill.id}" (${formatLAK(total)})...`);
+      printBillDirectly(newBill);
+    } else {
+      openReceiptModal(newBill);
+    }
   } else {
     showPosScanFeedback(`✅ ຮັບເງິນ ແລະ ບັນທຶກບິນ "${newBill.id}" (${formatLAK(total)}) ສຳເລັດແລ້ວ!`);
   }
@@ -2192,16 +2199,16 @@ function processCheckout(options = { print: false }) {
 }
 
 function checkoutReceiveOnly() {
-  processCheckout({ print: false });
+  processCheckout({ print: false, directPrint: false });
 }
 
 function checkoutAndPrint() {
-  openCustomerPopupModal({ print: true });
+  // ພິມບິນອອກທັນທີໂດຍບໍ່ສະແດງໜ້າຕ່າງໃສ່ຊື່ລູກຄ້າ ແລະ ບໍ່ສະແດງໜ້າຕ່າງຕົວຢ່າງໃບບິນ
+  processCheckout({ print: true, directPrint: true });
 }
 
-function openReceiptModal(bill) {
-  currentReceiptBill = bill;
-  const rcpt = {
+function buildReceiptHtml(bill, rcptOverride = null) {
+  const rcpt = rcptOverride || {
     ...DEFAULT_RECEIPT_SETTINGS,
     ...(state.receiptSettings || {})
   };
@@ -2218,8 +2225,8 @@ function openReceiptModal(bill) {
 
   const qrSection = shouldShowQr ? `
     <div class="receipt-qr-box">
-      <div style="font-weight:700;font-size:0.78rem;margin-bottom:0.25rem;color:#dc2626;">BCEL One QR ຊຳລະເງິນ</div>
-      <img src="${qrImgSrc}" alt="BCEL QR" style="width:120px;height:120px;object-fit:contain;margin:0 auto;display:block;" />
+      <div style="font-weight:700;font-size:0.78rem;margin-bottom:0.25rem;color:#000000;">BCEL One QR ຊຳລະເງິນ</div>
+      <img src="${qrImgSrc}" alt="BCEL QR" style="width:110px;height:110px;object-fit:contain;margin:0 auto;display:block;" />
       <div style="font-size:0.72rem;margin-top:0.2rem;">ຮ້ານຂາຍຜັກສົດ • ຍອດ ${formatLAK(bill.total)}</div>
     </div>
   ` : '';
@@ -2229,64 +2236,447 @@ function openReceiptModal(bill) {
     .map(line => line.trim())
     .join('<br>');
 
-  const html = `
+  const phoneLine = (rcpt.shopPhone || '').trim()
+    ? `<div style="font-size:0.75rem;">ໂທ / WhatsApp: ${rcpt.shopPhone}</div>`
+    : '';
+
+  return `
     <div class="receipt-center">
-      <div style="font-size:1.8rem;margin-bottom:0.15rem;">🥬</div>
+      <div style="font-size:1.5rem;margin-bottom:0.1rem;">🥬</div>
       <div class="receipt-shop-name">ຮ້ານຂາຍຜັກສົດ</div>
-      <div>ຜັກສົດ • ຊີ້ນ • ປາ • ໄຂ່ • ອາຫານແຫ້ງ</div>
-      <div style="font-size:0.75rem;">ໂທ / WhatsApp: ${rcpt.shopPhone || DEFAULT_RECEIPT_SETTINGS.shopPhone}</div>
+      <div style="font-size:0.76rem;">ຜັກສົດ • ຊີ້ນ • ປາ • ໄຂ່ • ອາຫານແຫ້ງ</div>
+      ${phoneLine}
     </div>
     <div class="receipt-divider"></div>
-    <div><strong>ວັນທີ:</strong> ${dateStr}</div>
-    <div><strong>ລູກຄ້າ:</strong> ${bill.customer} ${bill.phone !== '-' ? `(${bill.phone})` : ''}</div>
-    <div><strong>ຊຳລະຜ່ານ:</strong> ${getPaymentLabel(bill.paymentMethod)}</div>
+    <div style="font-size:0.78rem;"><strong>ເລກບິນ:</strong> ${bill.id}</div>
+    <div style="font-size:0.78rem;"><strong>ວັນທີ:</strong> ${dateStr}</div>
+    <div style="font-size:0.78rem;"><strong>ຊຳລະຜ່ານ:</strong> ${getPaymentLabel(bill.paymentMethod)}</div>
     <div class="receipt-divider"></div>
     <div>
       ${bill.items.map((item, idx) => `
-        <div class="receipt-item-row" style="align-items:flex-start;padding:0.28rem 0;border-bottom:1px dashed #cbd5e1;">
-          <div style="flex:1;min-width:0;padding-right:0.4rem;">
-            <div style="font-weight:700;color:#000000;line-height:1.35;font-size:0.86rem;">
-              <span style="display:inline-block;min-width:18px;font-weight:900;color:#000000;">${idx + 1}.</span>
+        <div class="receipt-item-row" style="align-items:flex-start;padding:0.24rem 0;border-bottom:1px dashed #94a3b8;">
+          <div style="flex:1;min-width:0;padding-right:0.35rem;">
+            <div style="font-weight:700;color:#000000;line-height:1.3;font-size:0.84rem;">
+              <span style="display:inline-block;min-width:16px;font-weight:900;color:#000000;">${idx + 1}.</span>
               <span>${item.name}</span>
             </div>
-            <div style="font-size:0.75rem;color:#475569;margin-left:1.15rem;margin-top:0.1rem;">
+            <div style="font-size:0.73rem;color:#334155;margin-left:1rem;margin-top:0.08rem;">
               ${item.qty} ${item.unit || ''} × ${Number(item.price || 0).toLocaleString()} ກີບ
             </div>
           </div>
-          <strong style="font-size:0.95rem;font-weight:800;color:#000000;font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:0.05rem;">
+          <strong style="font-size:0.9rem;font-weight:800;color:#000000;font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:0.04rem;">
             ${(item.price * item.qty).toLocaleString()}
           </strong>
         </div>
       `).join('')}
     </div>
     <div class="receipt-divider"></div>
-    <div class="receipt-item-row">
+    <div class="receipt-item-row" style="font-size:0.82rem;">
       <span>ລວມເປັນເງິນ:</span>
       <span>${formatLAK(bill.subtotal)}</span>
     </div>
     ${bill.discount > 0 ? `
-      <div class="receipt-item-row">
+      <div class="receipt-item-row" style="font-size:0.82rem;">
         <span>ສ່ວນຫຼຸດ:</span>
         <span>-${formatLAK(bill.discount)}</span>
       </div>
     ` : ''}
-    <div class="receipt-item-row" style="font-size:1rem;font-weight:800;margin-top:0.25rem;">
+    <div class="receipt-item-row" style="font-size:0.98rem;font-weight:800;margin-top:0.2rem;">
       <span>ຍອດສຸດທິ:</span>
       <span>${formatLAK(bill.total)}</span>
     </div>
     ${qrSection}
     <div class="receipt-divider"></div>
-    <div class="receipt-center" style="font-size:0.75rem;">
+    <div class="receipt-center" style="font-size:0.74rem;">
       ${thankYouHtml}
     </div>
   `;
+}
 
-  document.getElementById('receiptContent').innerHTML = html;
+function openReceiptModal(bill) {
+  currentReceiptBill = bill;
+  document.getElementById('receiptContent').innerHTML = buildReceiptHtml(bill);
   document.getElementById('receiptModal').classList.add('open');
 }
 
 function closeReceiptModal() {
   document.getElementById('receiptModal').classList.remove('open');
+}
+
+// ==========================================
+// SUNMI V1s (58mm) / ESC-POS DIRECT RECEIPT PRINTING
+// ==========================================
+let receiptBtDevice = null;
+let receiptBtServer = null;
+let receiptBtCharacteristic = null;
+
+function onRcptPrinterModeChange() {
+  const mode = document.getElementById('rcptPrinterModeInput')?.value || 'sunmi_system';
+  const btBtn = document.getElementById('btnConnectReceiptBT');
+  if (btBtn) {
+    btBtn.style.display = mode === 'bt_escpos' ? 'inline-flex' : 'none';
+  }
+}
+
+async function connectReceiptBluetoothPrinter() {
+  if (!navigator.bluetooth) {
+    alert('ບຣາວເຊີນີ້ບໍ່ຮອງຮັບ Web Bluetooth. ແນະນຳໃຫ້ໃຊ້ໂໝດ "ພິມຜ່ານລະບົບ Sunmi" ຫຼື "RawBT" ໃນ Google Chrome.');
+    return;
+  }
+  const statusEl = document.getElementById('rcptBtStatusText');
+  try {
+    if (statusEl) statusEl.textContent = '⏳ ກຳລັງຄົ້ນຫາເຄື່ອງພິມ...';
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [
+        '000018f0-0000-1000-8000-00805f9b34fb',
+        'e7810a71-73ae-499d-8c15-faa9aef0c3f2',
+        '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+        '0000ff00-0000-1000-8000-00805f9b34fb',
+        '0000ffe0-0000-1000-8000-00805f9b34fb'
+      ]
+    });
+    const server = await device.gatt.connect();
+    const services = await server.getPrimaryServices();
+    let writeChar = null;
+    for (const svc of services) {
+      const chars = await svc.getCharacteristics();
+      for (const ch of chars) {
+        if (ch.properties.writeWithoutResponse || ch.properties.write) {
+          writeChar = ch;
+          break;
+        }
+      }
+      if (writeChar) break;
+    }
+    if (!writeChar) throw new Error('ບໍ່ພົບຊ່ອງສົ່ງຂໍ້ມູນພິມ Bluetooth');
+
+    receiptBtDevice = device;
+    receiptBtServer = server;
+    receiptBtCharacteristic = writeChar;
+    device.addEventListener('gattserverdisconnected', () => {
+      receiptBtCharacteristic = null;
+      if (statusEl) statusEl.textContent = '🔴 ຕັດການເຊື່ອມຕໍ່ແລ້ວ';
+    });
+    if (statusEl) statusEl.textContent = `🟢 ເຊື່ອມຕໍ່ແລ້ວ: ${device.name || 'Bluetooth Printer'}`;
+    if (typeof showToast === 'function') {
+      showToast(`✅ ເຊື່ອມຕໍ່ເຄື່ອງພິມບິນ "${device.name || 'Bluetooth'}" ສຳເລັດ!`, 'success');
+    }
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    if (err && err.name !== 'NotFoundError') {
+      alert(`ເຊື່ອມຕໍ່ Bluetooth ບໍ່ສຳເລັດ: ${err.message || err}`);
+    }
+  }
+}
+
+async function renderReceiptToCanvas(bill, rcpt) {
+  const is80 = String(rcpt.paperWidth || '58') === '80';
+  // Sunmi V1s 58mm thermal head = 384 dots wide (48mm printable @ 203 DPI); 80mm = 576 dots
+  const canvasW = is80 ? 576 : 384;
+  const padX = is80 ? 14 : 8;
+  const fontLao = '"Noto Sans Lao", "Leelawadee UI", "Saysettha OT", "Phetsarath OT", sans-serif';
+
+  const dateStr = new Date(bill.date).toLocaleString('lo-LA', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  const thankLines = String(rcpt.thankYouText || DEFAULT_RECEIPT_SETTINGS.thankYouText)
+    .split('\n').map(s => s.trim()).filter(Boolean);
+
+  // Load optional custom QR image (dataURL) if configured
+  let qrImg = null;
+  const shouldShowQr = Boolean(rcpt.qrImageData) && (Boolean(rcpt.showQrAlways) || bill.paymentMethod === 'bcel' || bill.paymentMethod === 'credit');
+  if (shouldShowQr) {
+    qrImg = await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = rcpt.qrImageData;
+    });
+  }
+
+  // Compute dynamic height
+  const itemBlockH = is80 ? 54 : 46;
+  let estHeight = 200 + (bill.items.length * itemBlockH) + 125 + (thankLines.length * 24) + (qrImg ? 210 : 0);
+  if (bill.discount > 0) estHeight += 28;
+  if ((rcpt.shopPhone || '').trim()) estHeight += 24;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = canvasW;
+  canvas.height = estHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvasW, estHeight);
+  ctx.fillStyle = '#000000';
+  ctx.textBaseline = 'top';
+
+  let y = 10;
+  const drawDivider = () => {
+    ctx.beginPath();
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.5;
+    ctx.moveTo(padX, y + 6);
+    ctx.lineTo(canvasW - padX, y + 6);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    y += 14;
+  };
+
+  // Header
+  ctx.textAlign = 'center';
+  ctx.font = `bold ${is80 ? 30 : 25}px ${fontLao}`;
+  ctx.fillText('ຮ້ານຂາຍຜັກສົດ', canvasW / 2, y);
+  y += is80 ? 38 : 32;
+
+  ctx.font = `600 ${is80 ? 19 : 16}px ${fontLao}`;
+  ctx.fillText('ຜັກສົດ • ຊີ້ນ • ປາ • ໄຂ່ • ອາຫານແຫ້ງ', canvasW / 2, y);
+  y += is80 ? 26 : 22;
+
+  if ((rcpt.shopPhone || '').trim()) {
+    ctx.font = `600 ${is80 ? 18 : 16}px ${fontLao}`;
+    ctx.fillText(`ໂທ: ${rcpt.shopPhone.trim()}`, canvasW / 2, y);
+    y += 24;
+  }
+
+  drawDivider();
+
+  // Bill meta
+  ctx.textAlign = 'left';
+  ctx.font = `600 ${is80 ? 19 : 16}px ${fontLao}`;
+  ctx.fillText(`ເລກບິນ: ${bill.id}`, padX, y); y += 22;
+  ctx.fillText(`ວັນທີ: ${dateStr}`, padX, y); y += 22;
+  ctx.fillText(`ຊຳລະ: ${getPaymentLabel(bill.paymentMethod)}`, padX, y); y += 24;
+
+  drawDivider();
+
+  // Items
+  bill.items.forEach((item, idx) => {
+    const lineTotal = Number(item.price * item.qty).toLocaleString('en-US');
+    ctx.textAlign = 'left';
+    ctx.font = `bold ${is80 ? 21 : 18}px ${fontLao}`;
+    ctx.fillText(`${idx + 1}. ${item.name}`, padX, y);
+
+    ctx.textAlign = 'right';
+    ctx.font = `bold ${is80 ? 21 : 18}px ${fontLao}`;
+    ctx.fillText(lineTotal, canvasW - padX, y);
+    y += is80 ? 26 : 22;
+
+    ctx.textAlign = 'left';
+    ctx.font = `500 ${is80 ? 18 : 15}px ${fontLao}`;
+    ctx.fillText(`   ${item.qty} ${item.unit || ''} x ${Number(item.price || 0).toLocaleString('en-US')} ກີບ`, padX, y);
+    y += is80 ? 26 : 22;
+  });
+
+  drawDivider();
+
+  // Totals
+  ctx.font = `600 ${is80 ? 20 : 17}px ${fontLao}`;
+  ctx.textAlign = 'left'; ctx.fillText('ລວມເປັນເງິນ:', padX, y);
+  ctx.textAlign = 'right'; ctx.fillText(formatLAK(bill.subtotal), canvasW - padX, y);
+  y += 26;
+
+  if (bill.discount > 0) {
+    ctx.textAlign = 'left'; ctx.fillText('ສ່ວນຫຼຸດ:', padX, y);
+    ctx.textAlign = 'right'; ctx.fillText(`-${formatLAK(bill.discount)}`, canvasW - padX, y);
+    y += 26;
+  }
+
+  ctx.font = `bold ${is80 ? 26 : 22}px ${fontLao}`;
+  ctx.textAlign = 'left'; ctx.fillText('ຍອດສຸດທິ:', padX, y);
+  ctx.textAlign = 'right'; ctx.fillText(formatLAK(bill.total), canvasW - padX, y);
+  y += is80 ? 34 : 30;
+
+  if (qrImg) {
+    y += 6;
+    ctx.textAlign = 'center';
+    ctx.font = `bold ${is80 ? 19 : 16}px ${fontLao}`;
+    ctx.fillText('BCEL One QR ຊຳລະເງິນ', canvasW / 2, y);
+    y += 24;
+    const qrSize = is80 ? 180 : 156;
+    ctx.drawImage(qrImg, Math.round((canvasW - qrSize) / 2), y, qrSize, qrSize);
+    y += qrSize + 10;
+  }
+
+  drawDivider();
+
+  ctx.textAlign = 'center';
+  ctx.font = `600 ${is80 ? 18 : 15}px ${fontLao}`;
+  thankLines.forEach(line => {
+    ctx.fillText(line, canvasW / 2, y);
+    y += 22;
+  });
+  y += 14;
+
+  // Crop canvas tightly to actual content height
+  const finalCanvas = document.createElement('canvas');
+  finalCanvas.width = canvasW;
+  finalCanvas.height = Math.min(estHeight, y);
+  finalCanvas.getContext('2d').drawImage(canvas, 0, 0);
+  return finalCanvas;
+}
+
+function convertCanvasToEscPosRaster(canvas) {
+  const ctx = canvas.getContext('2d');
+  const width = canvas.width;
+  const height = canvas.height;
+  const widthBytes = Math.ceil(width / 8);
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const pixels = imageData.data;
+
+  // ESC @ (init), GS v 0 m xL xH yL yH (raster bit image: 1 = black dot, 0 = white)
+  const header = new Uint8Array([
+    0x1B, 0x40,
+    0x1D, 0x76, 0x30, 0x00,
+    widthBytes & 0xFF, (widthBytes >> 8) & 0xFF,
+    height & 0xFF, (height >> 8) & 0xFF
+  ]);
+
+  const raster = new Uint8Array(widthBytes * height);
+  let idx = 0;
+  for (let row = 0; row < height; row++) {
+    for (let colByte = 0; colByte < widthBytes; colByte++) {
+      let bVal = 0;
+      for (let bit = 0; bit < 8; bit++) {
+        const col = colByte * 8 + bit;
+        if (col < width) {
+          const off = (row * width + col) * 4;
+          const lum = pixels[off] * 0.299 + pixels[off + 1] * 0.587 + pixels[off + 2] * 0.114;
+          if (pixels[off + 3] > 128 && lum < 190) {
+            bVal |= (1 << (7 - bit));
+          }
+        }
+      }
+      raster[idx++] = bVal;
+    }
+  }
+
+  // Feed 4 lines + partial cut (ignored safely on tear-bar printers like Sunmi V1s)
+  const footer = new Uint8Array([0x1B, 0x64, 0x04, 0x1D, 0x56, 0x42, 0x00]);
+  const out = new Uint8Array(header.length + raster.length + footer.length);
+  out.set(header, 0);
+  out.set(raster, header.length);
+  out.set(footer, header.length + raster.length);
+  return out;
+}
+
+function uint8ToBase64(uint8) {
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < uint8.length; i += chunk) {
+    binary += String.fromCharCode.apply(null, uint8.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+async function printBillDirectly(bill, rcptOverride = null) {
+  if (!bill) return;
+  currentReceiptBill = bill;
+  const rcpt = rcptOverride || {
+    ...DEFAULT_RECEIPT_SETTINGS,
+    ...(state.receiptSettings || {})
+  };
+  const mode = rcpt.printerMode || 'sunmi_system';
+
+  // Mode 1: Sunmi V1s 1-Tap Silent Print via RawBT (ESC/POS 58mm Canvas Bitmap)
+  if (mode === 'sunmi_rawbt') {
+    try {
+      const canvas = await renderReceiptToCanvas(bill, rcpt);
+      const escPosBytes = convertCanvasToEscPosRaster(canvas);
+      const b64 = uint8ToBase64(escPosBytes);
+      window.location.href = `rawbt:base64,${b64}`;
+      return;
+    } catch (err) {
+      console.error('RawBT print error:', err);
+      alert(`ສົ່ງພິມຜ່ານ RawBT ບໍ່ສຳເລັດ: ${err.message || err}`);
+      return;
+    }
+  }
+
+  // Mode 2: Direct Web Bluetooth ESC/POS Printer
+  if (mode === 'bt_escpos') {
+    if (!receiptBtCharacteristic) {
+      const wantsConn = confirm('ຍັງບໍ່ທັນໄດ້ເຊື່ອມຕໍ່ເຄື່ອງພິມບິນ Bluetooth.\nກົດ "OK" ເພື່ອເຊື່ອມຕໍ່ດຽວນີ້!');
+      if (!wantsConn) return;
+      await connectReceiptBluetoothPrinter();
+      if (!receiptBtCharacteristic) return;
+    }
+    try {
+      const canvas = await renderReceiptToCanvas(bill, rcpt);
+      const escPosBytes = convertCanvasToEscPosRaster(canvas);
+      const CHUNK = 100;
+      for (let i = 0; i < escPosBytes.length; i += CHUNK) {
+        const slice = escPosBytes.slice(i, i + CHUNK);
+        if (receiptBtCharacteristic.writeValueWithoutResponse) {
+          await receiptBtCharacteristic.writeValueWithoutResponse(slice);
+        } else {
+          await receiptBtCharacteristic.writeValue(slice);
+        }
+        if (i + CHUNK < escPosBytes.length) {
+          await new Promise(r => setTimeout(r, 8));
+        }
+      }
+      if (typeof showToast === 'function') {
+        showToast(`✅ ພິມບິນ "${bill.id}" ຜ່ານ Bluetooth ສຳເລັດ!`, 'success');
+      }
+      return;
+    } catch (err) {
+      console.error('BT receipt print error:', err);
+      alert(`ພິມບິນຜ່ານ Bluetooth ຂັດຂ້ອງ: ${err.message || err}`);
+      return;
+    }
+  }
+
+  // Mode 3 (Default): Sunmi V1s / System Print Service (58mm formatted, no in-app modal shown!)
+  const rcptEl = document.getElementById('receiptContent');
+  if (rcptEl) {
+    rcptEl.innerHTML = buildReceiptHtml(bill, rcpt);
+  }
+  const is80 = String(rcpt.paperWidth || '58') === '80';
+  document.body.classList.toggle('receipt-paper-80', is80);
+  document.body.classList.add('printing-direct-receipt');
+
+  const cleanup = () => {
+    document.body.classList.remove('printing-direct-receipt');
+    window.removeEventListener('afterprint', cleanup);
+  };
+  window.addEventListener('afterprint', cleanup);
+
+  // Brief delay so DOM/QR image finishes rendering before print snapshot
+  setTimeout(() => {
+    window.print();
+    setTimeout(cleanup, 1500);
+  }, 120);
+}
+
+function testPrintSunmiReceiptSample() {
+  const previewRcpt = {
+    ...DEFAULT_RECEIPT_SETTINGS,
+    ...(state.receiptSettings || {}),
+    shopPhone: (document.getElementById('rcptPhoneInput')?.value || '').trim(),
+    qrImageData: document.getElementById('rcptQrDataInput')?.value || '',
+    showQrAlways: Boolean(document.getElementById('rcptShowQrAlwaysInput')?.checked),
+    thankYouText: (document.getElementById('rcptThankYouInput')?.value || '').trim() || DEFAULT_RECEIPT_SETTINGS.thankYouText,
+    printerMode: document.getElementById('rcptPrinterModeInput')?.value || 'sunmi_system',
+    paperWidth: document.getElementById('rcptPaperWidthInput')?.value || '58'
+  };
+  const sampleBill = {
+    id: 'TEST-SUNMI-58',
+    date: new Date().toISOString(),
+    customer: 'ລູກຄ້າທົ່ວໄປ',
+    phone: '-',
+    items: [
+      { name: 'ຜັກກາດຂາວ (ທົດສອບ Sunmi)', qty: 1, unit: 'ມັດ', price: 10000 }
+    ],
+    subtotal: 10000,
+    discount: 0,
+    total: 10000,
+    paymentMethod: 'cash',
+    status: 'paid'
+  };
+  printBillDirectly(sampleBill, previewRcpt);
 }
 
 function updateReceiptQrPreview(dataUrl) {
@@ -2317,9 +2707,14 @@ function openReceiptSettingsModal() {
   const phoneEl = document.getElementById('rcptPhoneInput');
   const thankEl = document.getElementById('rcptThankYouInput');
   const alwaysEl = document.getElementById('rcptShowQrAlwaysInput');
+  const modeEl = document.getElementById('rcptPrinterModeInput');
+  const widthEl = document.getElementById('rcptPaperWidthInput');
   if (phoneEl) phoneEl.value = rcpt.shopPhone || DEFAULT_RECEIPT_SETTINGS.shopPhone;
   if (thankEl) thankEl.value = rcpt.thankYouText || DEFAULT_RECEIPT_SETTINGS.thankYouText;
   if (alwaysEl) alwaysEl.checked = Boolean(rcpt.showQrAlways);
+  if (modeEl) modeEl.value = rcpt.printerMode || 'sunmi_system';
+  if (widthEl) widthEl.value = rcpt.paperWidth || '58';
+  onRcptPrinterModeChange();
   updateReceiptQrPreview(rcpt.qrImageData || '');
   document.getElementById('receiptSettingsModal')?.classList.add('open');
 }
@@ -2349,20 +2744,28 @@ function clearReceiptQrImage() {
 
 function saveReceiptSettingsForm(e) {
   e.preventDefault();
-  const shopPhone = (document.getElementById('rcptPhoneInput')?.value || '').trim() || DEFAULT_RECEIPT_SETTINGS.shopPhone;
+  const shopPhone = (document.getElementById('rcptPhoneInput')?.value || '').trim();
   const qrImageData = document.getElementById('rcptQrDataInput')?.value || '';
   const showQrAlways = Boolean(document.getElementById('rcptShowQrAlwaysInput')?.checked);
   const thankYouText = (document.getElementById('rcptThankYouInput')?.value || '').trim() || DEFAULT_RECEIPT_SETTINGS.thankYouText;
+  const printerMode = document.getElementById('rcptPrinterModeInput')?.value || 'sunmi_system';
+  const paperWidth = document.getElementById('rcptPaperWidthInput')?.value || '58';
 
   state.receiptSettings = {
     shopPhone,
     qrImageData,
     showQrAlways,
-    thankYouText
+    thankYouText,
+    printerMode,
+    paperWidth
   };
   saveState();
   closeReceiptSettingsModal();
-  if (currentReceiptBill) {
+  if (typeof showToast === 'function') {
+    showToast('✅ ບັນທຶກການຕັ້ງຄ່າໃບບິນ ແລະ ເຄື່ອງພິມ Sunmi ສຳເລັດ!', 'success');
+  }
+  const receiptModalEl = document.getElementById('receiptModal');
+  if (currentReceiptBill && receiptModalEl && receiptModalEl.classList.contains('open')) {
     openReceiptModal(currentReceiptBill);
   }
 }
